@@ -22,12 +22,14 @@ primeiro instale todas as dependências::
     sudo apt-get install libX11-dev curl wget mpg123 git
 
 Clone o repositório em uma pasta local e instale com os seguintes comandos::
+
     git clone https://github.com/senapk/kip
     cd kip/src/
     make
     make install
 
 Ou apenas execute o script::
+   
     curl https://raw.github.com/senapk/kfup/master/kfup_install.sh | sh;
 
 
