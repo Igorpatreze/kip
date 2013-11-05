@@ -2,11 +2,12 @@
 #include <string.h>
 #include <stdio.h>
 #include "../test/kip_test.h"
+#include "../exemplos/jogos/rpg/rpg.h"
+#include "../exemplos/jogos/nave/nave.h"
 
 int main()
 {
-    //kip_test_cores();
-    kip_test_polig();
+    main_nave();
     return 1;
 }
 

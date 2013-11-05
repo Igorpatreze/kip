@@ -47,8 +47,8 @@ void boneco( int x, int y){
     if(init == 1)
     {
         init = 0;
-        high = ka_rand()%40;
-        size = ka_rand()%40;
+        high = km_rand()%40;
+        size = km_rand()%40;
     }
     static int inc = 2;
     alterna(&high, size, 0, &inc );
@@ -56,14 +56,14 @@ void boneco( int x, int y){
     kp_up();
     kp_goto(0,-20);
     kp_down();
-    kp_head(270);
+    kp_seth(270);
     kp_fd(50);
     kp_lt(45);
     kp_fd(20);
     kp_bk(20);
     kp_rt(90);
     kp_fd(20);
-    kp_head(180);//pe
+    kp_seth(180);//pe
     pe += 5;
     kp_rt(pe%45);
     kp_fd(10);
@@ -100,13 +100,13 @@ void poligon( int nlados ){
 void kduck_teste1()
 {
     k_open(800,600,"oi");
-    kp_delay(0);
+    kp_setd(0);
     while(1)
     {
         boneco(100,100);
 
         boneco(200,200);
-        ka_sleep(50);
+        k_sleep(50);
         k_clear('w');
     }
 }
@@ -130,14 +130,32 @@ void matriz2(int x, int y)
             k_color('w');
             k_plot(j,i);
             k_color('r');
-            kd_square(j+0.1,i+0.1,k_get().block*0.8, 1);
+            k_square(j+0.1,i+0.1,k_info().block*0.8, 1);
         }
+}
+void kip_test_sol(){
+    k_open(800,600, "oi");
+    kp_setd(0);
+    int i;
+    for (i=0;i<4000;i+=20){
+        k_clear('K');
+        kf_rotate('p',i);
+        kp_fix(400,300);
+        kp_up();
+        kp_fd(50+i/20);
+        kp_down();
+        kp_polig(0,0 , -i, 30);
+        k_sleep(100);
+    }
+    k_wait();
 }
 
 void kip_test_polig(){
     k_open(800, 600, "oi");
     k_block(1);
-    k_polig(200,200, 100, 30, 1);
+    k_polig(200,200,'r', 100, 4, 1);
+    k_color('r');
+    k_polig(200,200,'s', 100, 4, 1);
     k_wait();
 }
 
@@ -145,9 +163,9 @@ void kip_test_cores(){
         k_open(1000,500,"Primeiro teste");
         k_block(50);
         k_clear('w');//pinta o fundo de branco
-        kf_zoom(5,5);
-        kf_rotate(0);
-        const char *cores = k_get().colors;
+        kf_zoom('t',5,5);
+        kf_rotate('t',0);
+        const char *cores = k_info().colors;
         int i;
         int t = strlen(cores);
         for( i = 0; i < t; i++)
@@ -156,7 +174,7 @@ void kip_test_cores(){
             k_plot(i, 2);
 
             k_color('K');
-            kf_rotate(-15);
+            kf_rotate('t',-15);
             k_write(i, 1.2, "%c", cores[i]);
         }
 

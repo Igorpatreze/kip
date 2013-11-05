@@ -27,16 +27,16 @@ Adaptações por David Sena. sena.ufc@gmail.com
 /* ############################################ */
 /*
 
-kf_open creates several X11 objects, and stores them in globals
+k_open creates several X11 objects, and stores them in globals
 for use by the other functions in the library.
 */
 
-static Display *kf_display;
-static Window  kf_window;
-static GC      kf_gc;
-static Colormap kf_colormap;
+static Display *gfx_display;
+static Window  gfx_window;
+static GC      gfx_gc;
+static Colormap gfx_colormap;
 
-/* These values are saved by kf_wait then retrieved later by kf_xpos and kf_ypos. */
+/* These values are saved by k_wait then retrieved later by k_xpos and k_ypos. */
 
 static int saved_xpos = 0;
 static int saved_ypos = 0;
@@ -50,9 +50,10 @@ ks_kip * __kip(){
         info.height = 0;
         info.width  = 0;
         info.color  = 'w';
-        info.clear = 'B';
-        info.block  = 20;
+        info.clear  = 'B';
+        info.block  = 1;
         info.colors = "RrGgBbYyCcMmWwKk";
+        info.letter = 10;
         struct timeval tv;
         gettimeofday(&tv, 0);//salva o tempo inicial
         info.start = tv.tv_sec*1000 + tv.tv_usec/1000;
@@ -60,7 +61,7 @@ ks_kip * __kip(){
     return &info;
 }
 
-ks_kip k_get(){
+ks_kip k_info(){
     return *(__kip());
 }
 
@@ -78,39 +79,39 @@ void k_open( int width, int height, const char *title )
     __kip()->height = height;
     __kip()->width  = width;
     srand(time(NULL));
-    kf_display = XOpenDisplay(0);
-    if(!kf_display) {
-        fprintf(stderr,"kf_open: unable to open the graphics window.\n");
+    gfx_display = XOpenDisplay(0);
+    if(!gfx_display) {
+        fprintf(stderr,"k_open: unable to open the graphics window.\n");
         exit(1);
     }
 
-    int blackColor = BlackPixel(kf_display, DefaultScreen(kf_display));
-    int whiteColor = WhitePixel(kf_display, DefaultScreen(kf_display));
+    int blackColor = BlackPixel(gfx_display, DefaultScreen(gfx_display));
+    int whiteColor = WhitePixel(gfx_display, DefaultScreen(gfx_display));
 
-    kf_window = XCreateSimpleWindow(kf_display, DefaultRootWindow(kf_display), 0, 0, width, height, 0, blackColor, blackColor);
+    gfx_window = XCreateSimpleWindow(gfx_display, DefaultRootWindow(gfx_display), 0, 0, width, height, 0, blackColor, blackColor);
 
     XSetWindowAttributes attr;
     attr.backing_store = Always;
 
-    XChangeWindowAttributes(kf_display,kf_window,CWBackingStore,&attr);
+    XChangeWindowAttributes(gfx_display,gfx_window,CWBackingStore,&attr);
 
-    XStoreName(kf_display,kf_window,title);
+    XStoreName(gfx_display,gfx_window,title);
 
-    XSelectInput(kf_display, kf_window, StructureNotifyMask|KeyPressMask|ButtonPressMask);
+    XSelectInput(gfx_display, gfx_window, StructureNotifyMask|KeyPressMask|ButtonPressMask);
 
-    XMapWindow(kf_display,kf_window);
+    XMapWindow(gfx_display,gfx_window);
 
-    kf_gc = XCreateGC(kf_display, kf_window, 0, 0);
+    gfx_gc = XCreateGC(gfx_display, gfx_window, 0, 0);
 
-    kf_colormap = DefaultColormap(kf_display,0);
+    gfx_colormap = DefaultColormap(gfx_display,0);
 
-    XSetForeground(kf_display, kf_gc, whiteColor);
+    XSetForeground(gfx_display, gfx_gc, whiteColor);
 
     // Wait for the MapNotify event
 
     for(;;) {
         XEvent e;
-        XNextEvent(kf_display, &e);
+        XNextEvent(gfx_display, &e);
         if (e.type == MapNotify)
             break;
     }
@@ -127,12 +128,12 @@ int k_event_waiting()
        k_flush();
 
        while (1) {
-               if(XCheckMaskEvent(kf_display,-1,&event)) {
+               if(XCheckMaskEvent(gfx_display,-1,&event)) {
                        if(event.type==KeyPress) {
-                               XPutBackEvent(kf_display,&event);
+                               XPutBackEvent(gfx_display,&event);
                                return 1;
                        } else if (event.type==ButtonPress) {
-                               XPutBackEvent(kf_display,&event);
+                               XPutBackEvent(gfx_display,&event);
                                return 1;
                        } else {
                                return 0;
@@ -152,7 +153,7 @@ char k_wait()
     k_flush();
 
     while(1) {
-        XNextEvent(kf_display,&event);
+        XNextEvent(gfx_display,&event);
 
         if(event.type==KeyPress) {
             saved_xpos = event.xkey.x;
@@ -182,7 +183,7 @@ float k_ypos()
 
 void k_flush()
 {
-    XFlush(kf_display);
+    XFlush(gfx_display);
 }
 
 /* ############################################ */
@@ -243,44 +244,44 @@ void k_color_rgb( int r, int g, int b )
     color.red = r<<8;
     color.green = g<<8;
     color.blue = b<<8;
-    XAllocColor(kf_display,kf_colormap,&color);
-    XSetForeground(kf_display, kf_gc, color.pixel);
+    XAllocColor(gfx_display,gfx_colormap,&color);
+    XSetForeground(gfx_display, gfx_gc, color.pixel);
 }
 
 /* Change the current background color. */
-void k_clear_color_rgb( int r, int g, int b )
+void __clear_color_rgb( int r, int g, int b )
 {
     XColor color;
     color.pixel = 0;
     color.red = r<<8;
     color.green = g<<8;
     color.blue = b<<8;
-    XAllocColor(kf_display,kf_colormap,&color);
+    XAllocColor(gfx_display,gfx_colormap,&color);
 
     XSetWindowAttributes attr;
     attr.background_pixel = color.pixel;
-    XChangeWindowAttributes(kf_display,kf_window,CWBackPixel,&attr);
+    XChangeWindowAttributes(gfx_display,gfx_window,CWBackPixel,&attr);
 }
-void k_clear_color(char color){
+void __clear_color(char color){
     if(color == __kip()->clear)
         return;
     icolor kc = __get_color(color);
     if(kc.r == -1)
         return;
     __kip()->clear = color;
-    k_clear_color_rgb(kc.r,kc.g,kc.b);
+    __clear_color_rgb(kc.r,kc.g,kc.b);
 }
 /* Clear the graphics window to the background color. */
 void k_clear(char color)
 {
-    k_clear_color(color);
-    XClearWindow(kf_display,kf_window);
+    __clear_color(color);
+    XClearWindow(gfx_display,gfx_window);
 }
 
 void k_clear_rgb(int r, int g, int b )
 {
-    k_clear_color_rgb(r, g, b);
-    XClearWindow(kf_display,kf_window);
+    __clear_color_rgb(r, g, b);
+    XClearWindow(gfx_display,gfx_window);
 }
 
 /* ############################################ */
@@ -290,42 +291,43 @@ void k_clear_rgb(int r, int g, int b )
 
 void k_line( float x1, float y1, float x2, float y2 )
 {
-    int block = k_get().block;
-    ki_line(x1*block,y1*block, x2*block, y2*block);
+    int block = k_info().block;
+    ii_line(x1*block,y1*block, x2*block, y2*block);
 }
 
 /* Draw a line from (x1,y1) to (x2,y2) */
-void ki_line(int x1, int y1, int x2, int y2 )
+void ii_line(int x1, int y1, int x2, int y2 )
 {
-    XDrawLine(kf_display,kf_window,kf_gc,x1,y1,x2,y2);
+    XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
 }
 
 //plota um pixel ou um quadrado fechado
 void k_plot(float x , float y)
 {
-    kd_square(x,y, k_get().block, 1);
+    k_square(x,y, k_info().block, 1);
 }
 
 /* Paint a square, filled if filled == 1 */
-void kd_square( float x, float y, int side, int filled)
+void k_square( float xc, float yc, int side, int filled)
 {
     int i;
+    double x, y;
 
-    int block = k_get().block;
+    int block = k_info().block;
     if(side == 0)
         side = block;
-    x = x * block;//convertendo para posicoes em pixels
-    y = y * block;
+    x = xc * block - side/2;//convertendo para posicoes em pixels
+    y = yc * block - side/2;
     if(filled == 0)
     {
-        ki_line(x, y, x+side, y);
-        ki_line(x, y, x, y + side);
-        ki_line(x + side, y, x + side , y + side);
-        ki_line(x , y + side, x + side , y + side);
+        ii_line(x, y, x+side, y);
+        ii_line(x, y, x, y + side);
+        ii_line(x + side, y, x + side , y + side);
+        ii_line(x , y + side, x + side , y + side);
     }
     else{//filled
         for( i = 0; i < side; i++)
-            ki_line(x, y + i, x + side, y + i);
+            ii_line(x, y + i, x + side, y + i);
     }
 }
 
@@ -334,24 +336,39 @@ void __polig_plot(double x, double y, const void *param)
 {
     // x centro
     double xc = *(double *)param;
-    ki_line(x,y,x+2*(xc-x),y);
+    ii_line(x,y,x+2*(xc-x),y);
 }
 
 
-void k_polig(double x, double y, double radius, int sides, int filled)
+void k_polig(double xc, double yc, char flag,
+             double value, int sides, int filled)
 {
     if (sides < 3)
         return;
+    int block = k_info().block;
+    xc *= block;
+    yc *= block;
+
     double int_ang = (sides - 2)*180.0/sides;
     double ext_ang = 360.0/sides;
-    double side    = fabs(2 * radius*cos(ki_DEG2RAD(int_ang/2)));
+    double radius, side;
+    if(flag == 'r')
+    {
+        radius = value;
+        side    = fabs(2 * radius*cos(km_deg2rad(int_ang/2)));
+    }
+    if(flag == 's')
+    {
+        side = value;
+        radius    = fabs(side/(2*cos(km_deg2rad(int_ang/2))));
+    }
 
-    ks_pen kp = kpi_new(0);
-    kp.x = x;
-    kp.y = y;
+    ks_pen kp = ip_new(0);
+    kp.x = xc;
+    kp.y = yc;
     kp.head = 270 - (360/(2*sides));
     kp.isdown = 0;
-    kpi_fd(&kp, radius);
+    ip_fd(&kp, radius);
     kp.isdown = 1;
 
     if (filled == 0)
@@ -360,7 +377,7 @@ void k_polig(double x, double y, double radius, int sides, int filled)
         int qtd = sides;
         while(qtd--)
         {
-            kpi_fd(&kp, side);
+            ip_fd(&kp, side);
             kp.head += ext_ang;
         }
         //ki_line();
@@ -373,12 +390,12 @@ void k_polig(double x, double y, double radius, int sides, int filled)
         {
             double xbeg = kp.x;
             double ybeg = kp.y;
-            kpi_fd(&kp, side);
+            ip_fd(&kp, side);
             kp.head -= ext_ang;
             double xend = kp.x;
             double yend = kp.y;
-            ki_line_process((ks_point){xbeg, ybeg}, (ks_point){xend,yend},
-                            __polig_plot,&(x));
+            ii_line_process((ks_point){xbeg, ybeg}, (ks_point){xend,yend},
+                            __polig_plot,&(xc));
         }
     }
 }
@@ -391,14 +408,14 @@ int ki_time2mseg(struct timeval tv)
     return  tv.tv_sec*1000 + tv.tv_usec/1000;
 }
 
-int ka_alive()
+int k_alive()
 {
     struct timeval tv;
     gettimeofday(&tv, 0);
-    return ki_time2mseg(tv) - k_get().start;
+    return ki_time2mseg(tv) - k_info().start;
 }
 
-void ka_sleep(int msec)
+void k_sleep(int msec)
 {
     k_flush();
     struct timespec interval;
@@ -411,18 +428,18 @@ void ka_sleep(int msec)
 
 
 
-int ka_rand()
+int km_rand()
 {
     return rand();
 }
 
-void ka_mp3_play(char *path){
+void k_mp3_play(char *path){
     char c[500];
     sprintf(c,"mpg123 %s 2>/dev/null 1>/dev/null&",path);
     system(c);
 }
 
-void ka_mp3_stop(char *path){
+void k_mp3_stop(char *path){
     char c[500];
     sprintf(c,"ps aux  | grep \"mpg123 %s\" |head -1|  awk '{ print $2; }' | xargs kill -9 2>/dev/null 1>/dev/null&",path);
     system(c);
@@ -433,43 +450,83 @@ void ka_mp3_stop(char *path){
 /* ######## FUNCOES DE FORMATACAO     ######### */
 /* ############################################ */
 
+int test_type_error(char type)
+{
+    if(type == 't' || type == 'i' || type == 'p')
+        return 0;
+    fprintf(stderr, "Flag inexistente\n");
+    return 1;
+}
+
 //Fornece uma variavel global para as funcoes de formatacao
-ks_format * __geo()
+ks_fmt * kt_get(char type)
 {
-    static ks_format fo = {0, 0, 2, 2, 0};
-    return &fo;
+    test_type_error(type);
+
+    static ks_fmt ft = {0, 0, 2, 2, 0};
+    static ks_fmt fi = {0, 0, 2, 2, 0};
+    static ks_fmt dummy = {0, 0, 1, 1, 0};
+
+    if(type == 't')
+        return &ft;
+    if(type == 'i')
+        return &fi;
+    if(type == 'p')
+        return &(kp_get()->fmt);
+
+    return &dummy;
 }
 
-//retorna o valor corrente das transformacoes
-ks_format  kf_get()
+void kf_reset(char type)
 {
-    return *(__geo());
+    if(test_type_error(type))  return;
+
+    if(type == 't')
+    {
+        *(kt_get('t')) = (ks_fmt){0,0,2,2,0};
+        return;
+    }
+    if(type == 'i')
+    {
+        *(kt_get('i')) = (ks_fmt){0,0,2,2,0};
+        return;
+    }
+    if(type == 'p')
+    {
+        *(kt_get('p')) = (ks_fmt){0,0,1,1,0};
+        return;
+    }
 }
 
-void kf_reset()
+void kf_zoom(char type , float xscale, float yscale)
 {
-    *(__geo()) = (ks_format){0,0,2,2,0};
+    if(test_type_error(type))  return;
+    kt_get(type)->xzoom = xscale;
+    kt_get(type)->yzoom = yscale;
 }
 
-void kf_zoom(float xscale, float yscale)
+void kf_flip(char type, int xflag, int yflag)
 {
-    __geo()->xz = xscale;
-    __geo()->yz = yscale;
+    if(test_type_error(type))  return;
+    kt_get(type)->xflip = xflag;
+    kt_get(type)->yflip = yflag;
 }
 
-void kf_flip(int xflag, int yflag)
+void kf_rotate(char type, float angle)
 {
-    __geo()->xf = xflag;
-    __geo()->yf = yflag;
+    if(test_type_error(type))  return;
+    kt_get(type)->rot = angle;
 }
 
-void kf_rotate(float angle)
+void kf_set    (char type, ks_fmt fmt)
 {
-    __geo()->rot = angle;
+    if(test_type_error(type))  return;
+    *(kt_get(type)) = fmt;
 }
 
-void kf_set(ks_format format){
-    *(__geo()) = format;
+ks_fmt kf_get(char type)
+{
+    return *(kt_get(type));
 }
 
 /* ############################################ */
@@ -493,41 +550,40 @@ void kf_set(ks_format format){
 //    return c;
 //}
 
-void ki_decompose(double degrees, double *xcomp, double *ycomp)
+/* retorna distancia entre dois pontos */
+double km_dist(double ax, double ay, double bx, double by)
 {
-    double angle = ki_DEG2RAD(degrees);
-    *xcomp = cos(angle);
-    *ycomp = sin(angle);
+    return sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
 }
 
 /* Return the angle in degrees from a to b */
-double ki_angle(double ax, double ay, double bx, double by)
+double km_angle(double ax, double ay, double bx, double by)
 {
-    return ki_RAD2DEG(atan((ax - bx)/(ay - by))+ki_M_PI);
+    return km_rad2deg(atan((by - ay)/(ax - bx))+km_PI);
 }
 
-void ki_coor_rot(double cx, double cy, double *prx, double *pry, double degrees)
+void km_coor_rot(double cx, double cy, double *px, double *py, double degrees)
 {
-    double rx = *prx;
-    double ry = *pry;
-    double angle = (-1) * ki_DEG2RAD(degrees);
-    *prx = (rx - cx)*cos(angle) - (ry - cy)*sin(angle) + cx;
-    *pry = (ry - cy)*cos(angle) + (rx - cx)*sin(angle) + cy;
+    double rx = *px;
+    double ry = *py;
+    double angle = (-1) * km_deg2rad(degrees);
+    *px = (rx - cx)*cos(angle) - (ry - cy)*sin(angle) + cx;
+    *py = (ry - cy)*cos(angle) + (rx - cx)*sin(angle) + cy;
 }
 
-ks_point ki_point_fmt(ks_point center, ks_point relative, ks_format fmt)
+ks_point ii_point_fmt(ks_point center, ks_point relative, ks_fmt fmt)
 {
-    if(fmt.xf)
+    if(fmt.xflip)
         relative.x *= -1;
 
     //yflip
-    if(fmt.yf)
+    if(fmt.yflip)
         relative.y *= -1;
 
     //xscale
-    relative.x *= fmt.xz;
+    relative.x *= fmt.xzoom;
     //yscale
-    relative.y *= fmt.yz;
+    relative.y *= fmt.yzoom;
 
 
     //changing relative to absolute before rotating
@@ -535,7 +591,7 @@ ks_point ki_point_fmt(ks_point center, ks_point relative, ks_format fmt)
     relative.y += center.y;
     //rotate
     //relative = ki_point_rotate(center, relative, fmt.rot);
-    ki_coor_rot(center.x, center.y, &relative.x, &relative.y, fmt.rot);
+    km_coor_rot(center.x, center.y, &relative.x, &relative.y, fmt.rot);
     return relative;
 }
 
@@ -544,7 +600,7 @@ ks_point ki_point_fmt(ks_point center, ks_point relative, ks_format fmt)
 /* ############################################ */
 
 
-void i_kline_y(ks_point a, ks_point b, ki_plot_fn fn, const void * param)
+void i_kline_y(ks_point a, ks_point b, ii_plot_fn fn, const void * param)
 {
     double x, y = a.y;
     double d=(b.x - a.x)/(b.y - a.y);
@@ -567,7 +623,7 @@ void i_kline_y(ks_point a, ks_point b, ki_plot_fn fn, const void * param)
     }
 }
 
-void i_kline_x(ks_point a, ks_point b, ki_plot_fn fn, const void * param)
+void i_kline_x(ks_point a, ks_point b, ii_plot_fn fn, const void * param)
 {
     double x = a.x, y;
     double d=(b.y - a.y)/(b.x - a.x);
@@ -592,7 +648,7 @@ void i_kline_x(ks_point a, ks_point b, ki_plot_fn fn, const void * param)
     }
 }
 
-void i_kline_select_axes(ks_point a, ks_point b, ki_plot_fn fn, const void *param)
+void i_kline_select_axes(ks_point a, ks_point b, ii_plot_fn fn, const void *param)
 {
     if(a.x == b.x && a.y == b.y){
         fn(a.x, a.y, param);
@@ -605,7 +661,7 @@ void i_kline_select_axes(ks_point a, ks_point b, ki_plot_fn fn, const void *para
         i_kline_y(a, b, fn, param );
 }
 
-void ki_line_process(ks_point a, ks_point b, ki_plot_fn fn, const void *param){
+void ii_line_process(ks_point a, ks_point b, ii_plot_fn fn, const void *param){
     i_kline_select_axes(a, b, fn, param) ;
 }
 
@@ -617,19 +673,18 @@ void ki_line_process(ks_point a, ks_point b, ki_plot_fn fn, const void *param){
 #include <stdarg.h>
 
 
-void __k_draw(int px, int py, const char * head, int nlin, int ncol)
+void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
 {
-    ks_format tg = kf_get();
     if ( head != 0)
     {
-        float dx_center = (ncol * (int)(tg.xz + 0.5))/2;
-        float dy_center = (nlin * (int)(tg.yz + 0.5))/2;
+        float dx_center = (ncol * (int)(fmt.xzoom + 0.5))/2;
+        float dy_center = (nlin * (int)(fmt.yzoom + 0.5))/2;
         ks_point pcenter = {dx_center + px ,
                            dy_center + py };
-        int xzoom = (int) tg.xz;
-        int yzoom = (int) tg.yz;
-        tg.xz = 1;// a transformacao de zoom ja eh computada
-        tg.yz = 1;// nessa funcao
+        int xzoom = (int) fmt.xzoom;
+        int yzoom = (int) fmt.yzoom;
+        fmt.xzoom = 1;// a transformacao de zoom ja eh computada
+        fmt.yzoom = 1;// nessa funcao
         int i, j, I, J;
 
         //2 for para varrer a matriz
@@ -651,8 +706,8 @@ void __k_draw(int px, int py, const char * head, int nlin, int ncol)
                     {   //deslocamento relativo de cada ponto em relacao
                         //ao centro absoluto da imagem
                         desl =(ks_point) {j*xzoom+J-dx_center, i*yzoom+I-dy_center};
-                        abs  =(ks_point) ki_point_fmt(pcenter, desl, tg);
-                        ki_line(abs.x, abs.y, abs.x, abs.y);
+                        abs  =(ks_point) ii_point_fmt(pcenter, desl, fmt);
+                        ii_line(abs.x, abs.y, abs.x, abs.y);
                     }
                 }
             }
@@ -662,44 +717,63 @@ void __k_draw(int px, int py, const char * head, int nlin, int ncol)
 
 
 
-void k_draw(float x, float y, const char * head, int nlin, int ncol)
+void k_draw(float x, float y, const char *address, int nlin, int ncol)
 {
-    __k_draw(x * k_get().block, y * k_get().block, head, nlin, ncol);
+    ks_fmt fmt = *(kt_get('i'));
+    int block = k_info().block;
+    ii_draw(x * block, y * block, address, nlin, ncol, fmt);
 }
 
-void k_write(float x, float y, const char *format, ...)
-{
-    char str[1000];
-    va_list args;
-    va_start( args, format );
-    vsprintf(str, format, args);
-    va_end( args );
 
-    ks_format tg = kf_get();
+void ii_vwrite(float x, float y, ks_fmt fmt, const char *str)
+{
     int len = strlen(str);
     int i;
-    int block = k_get().block;
+    int block = k_info().block;
     int letter = 10;
     for(i = 0; i < len; i++)
     {
         if(str[i] != '\n' && str[i]>=0 && str[i]<127)
         {
             const char * head = k_code((int) str[i]);
-            __k_draw(x * block + i * tg.xz * letter, y * block,
-                     head, 10, 10 );
+            ii_draw(x * block + i * fmt.xzoom * letter, y * block,
+                     head, 10, 10, fmt );
         }
     }
     k_flush();
 }
 
+#define ii_FORMAT2STR \
+    char str[1000];   \
+    va_list args;     \
+    va_start( args, format );\
+    vsprintf(str, format, args);\
+    va_end( args );
+
+void k_write(float x, float y, const char *format, ...)
+{
+    ii_FORMAT2STR;
+    ks_fmt fmt = *(kt_get('t'));
+    ii_vwrite(x,y,fmt,str);
+}
+
+void ii_write(float x, float y,ks_fmt fmt, const char *format, ...)
+{
+    ii_FORMAT2STR;
+    ii_vwrite(x,y,fmt, str);
+}
+
+
+
+
 /* ############################################ */
 /* ######## MODULO DE PEN            ######### */
 /* ############################################ */
 
-ks_pen kpi_new(int delay){
+ks_pen ip_new(int delay){
     ks_pen pen;
-    pen.x = k_get().width/2;
-    pen.y = k_get().height/2;
+    pen.x = k_info().width/2;
+    pen.y = k_info().height/2;
     pen.head = 0;
     pen.isdown  = 1;
     pen.delay   = delay;
@@ -707,7 +781,7 @@ ks_pen kpi_new(int delay){
     pen.xcenter = 0;
     pen.ycenter = 0;
 
-    pen.fmt = (ks_format){0,0,1,1,0};
+    pen.fmt = (ks_fmt){0,0,1,1,0};
     return pen;
 }
 
@@ -715,29 +789,28 @@ ks_pen kpi_new(int delay){
 
 void __plot_delay_wrapper( double x, double y, const void *param)
 {
-    ki_line( x,y, x,y);
+    ii_line( x,y, x,y);
     k_flush();
     float delay = *(float *) param;
     if(delay>1)
-        ka_sleep(delay);
+        k_sleep(delay);
     else
     {
-        int r = ka_rand()%100;
+        int r = km_rand()%100;
         if(r < delay*100)
-            ka_sleep(1);
+            k_sleep(1);
     }
 }
 
 void __plot_line(int x1,int y1,int x2,int y2, float delay){
-    ki_line_process((ks_point){x1,y1}, (ks_point){x2,y2}, __plot_delay_wrapper, &delay);
+    ii_line_process((ks_point){x1,y1}, (ks_point){x2,y2}, __plot_delay_wrapper, &delay);
 }
 
 /* ##########        Tranformacoes  ########### */
 
-void kpi_fix(ks_pen *kp, ks_format fmt, double x, double y){
+void ip_fix(ks_pen *kp, double x, double y){
     kp->xcenter = x;
     kp->ycenter = y;
-    kp->fmt = fmt;
 
     kp->x = 0;
     kp->y = 0;
@@ -745,30 +818,30 @@ void kpi_fix(ks_pen *kp, ks_format fmt, double x, double y){
     kp->isdown = 1;
 }
 
-void kpi_goto( ks_pen *kp, double xdest, double ydest)
+void ip_goto( ks_pen *kp, double xdest, double ydest)
 {
     ks_point pactual ={kp->x, kp->y};
     ks_point pdest   ={xdest, ydest};
     if(kp->isdown)
     {
         ks_point center = {kp->xcenter, kp->ycenter};
-        ks_point abs_orig = ki_point_fmt(center,pactual, kp->fmt);
-        ks_point abs_dest = ki_point_fmt(center,pdest  , kp->fmt);
+        ks_point abs_orig = ii_point_fmt(center,pactual, kp->fmt);
+        ks_point abs_dest = ii_point_fmt(center,pdest  , kp->fmt);
         __plot_line(abs_orig.x, abs_orig.y, abs_dest.x, abs_dest.y, kp->delay);
     }
     kp->x = xdest;
     kp->y = ydest;
 }
 
-void kpi_fd(ks_pen *kp, double px)
+void ip_fd(ks_pen *kp, double px)
 {
     double nx, ny;
-    nx = kp->x + px*cos(ki_DEG2RAD(kp->head));
-    ny = kp->y - px*sin(ki_DEG2RAD(kp->head));
-    kpi_goto(kp, nx, ny );
+    nx = kp->x + px*cos(km_deg2rad(kp->head));
+    ny = kp->y - px*sin(km_deg2rad(kp->head));
+    ip_goto(kp, nx, ny );
 }
 
-void kpi_polig(ks_pen *kp, double xc, double yc, double angle, int steps)
+void ip_polig(ks_pen *kp, double xc, double yc, double angle, int steps)
 {
     double xorigin = kp->x;
     double yorigin = kp->y;
@@ -776,57 +849,61 @@ void kpi_polig(ks_pen *kp, double xc, double yc, double angle, int steps)
     for(i=0; i<steps; i ++)
     {
         double destx = xorigin, desty = yorigin;
-        ki_coor_rot(xc, yc, &destx, &desty, angle/steps);
-        kp_goto(destx, desty);
+        km_coor_rot(xc, yc, &destx, &desty, (i+1)*(angle/steps));
+        ip_goto(kp, destx, desty);
     }
 }
 
 /* ##########          Funcoes      ########### */
 
-ks_pen * __kpen(){
+ks_pen * kp_get(){
     static ks_pen pen;
     static int init = 1;
     if(init == 1)
     {
         init = 0;
-        pen = kpi_new(0);
+        pen = ip_new(0);
     }
     return &pen;
 }
-ks_pen kp_get(){
-    return *(__kpen());
-}
+//ks_pen kp_get(){
+//    return *(kp_pen());
+//}
 
-void kp_xcor(double x){__kpen()->x = x;}
-void kp_ycor(double y){__kpen()->y = y;}
-void kp_delay(float delay){__kpen()->delay = delay;}
-void kp_head(double head){ __kpen()->head = head; }
+void kp_setx(double x){kp_get()->x = x;}
+void kp_sety(double y){kp_get()->y = y;}
+void kp_setd(float delay){kp_get()->delay = delay;}
+void kp_seth(double head){ kp_get()->head = head; }
 
+double kp_xcor ()    {return kp_get()->x; }
+double kp_ycor ()    {return kp_get()->y; }
+double kp_delay(){return kp_get()->delay; }
+double kp_head () {return kp_get()->head; }
 // estado
-void kp_up()  { __kpen()->isdown = 0; }
-void kp_down(){ __kpen()->isdown = 1; }
+void kp_up()  { kp_get()->isdown = 0; }
+void kp_down(){ kp_get()->isdown = 1; }
 
 //movimentacao
 
 /* ############### METODOS GLOBAIS ########### */
 void kp_fix(double x, double y)
 {
-    kpi_fix(__kpen(), kf_get(), x, y);
+    ip_fix(kp_get(), x, y);
 }
 
 void kp_unfix()
 {
-    *__kpen() = kpi_new(__kpen()->delay);
+    *kp_get() = ip_new(kp_get()->delay);
 }
 
 void kp_home()
 {
-    *(__kpen()) = kpi_new(__kpen()->delay);
+    *(kp_get()) = ip_new(kp_get()->delay);
 }
 
 void kp_goto(double xdest, double ydest)
 {
-    kpi_goto(__kpen(), xdest, ydest);
+    ip_goto(kp_get(), xdest, ydest);
 }
 
 void kp_line(double ax, double ay, double bx, double by)
@@ -837,18 +914,18 @@ void kp_line(double ax, double ay, double bx, double by)
     kp_goto(bx, by);
 }
 
-void kp_lt (double degrees){ __kpen()->head += degrees; }
+void kp_lt (double degrees){ kp_get()->head += degrees; }
 void kp_rt (double degrees){ kp_lt(degrees*(-1)); }
 
 void kp_fd(double px)
 {
-    kpi_fd(__kpen(), px);
+    ip_fd(kp_get(), px);
 }
 void kp_bk(double px) { kp_fd(px*(-1));}
 
 void kp_polig(double xcenter, double ycenter, double angle, int steps)
 {
-    kpi_polig(__kpen(), xcenter, ycenter, angle, steps);
+    ip_polig(kp_get(), xcenter, ycenter, angle, steps);
 }
 /* ############################################ */
 /* ##### BASE DE DADOS DE CARACTERES  #### */
@@ -2515,5 +2592,5 @@ const char * k_code(int code)
         mat[125] = &(asc_125[0][0]);
         mat[126] = &(asc_126[0][0]);
     }
-    return mat[code];
+    return  mat[code];
 }
