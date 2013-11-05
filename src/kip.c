@@ -304,7 +304,12 @@ void ii_line(int x1, int y1, int x2, int y2 )
 //plota um pixel ou um quadrado fechado
 void k_plot(float x , float y)
 {
-    k_square(x,y, k_info().block, 1);
+    int block = k_info().block;
+    x *= block;
+    y *= block;
+    int i;
+    for( i = 0; i < block; i++)
+        ii_line(x, y + i, x + block, y + i);
 }
 
 /* Paint a square, filled if filled == 1 */

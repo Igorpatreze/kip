@@ -2,12 +2,11 @@
    Exemplo 2 */
 #include <kip.h>
 
-int main()
+int main_evento()
 {
     // Open a new window for drawing.
     k_open(1000, 500, "Exemplo 2");
     k_block(20);
-    f_zoom(2, 2);
     int cont = 0;
     while (1)
     {
@@ -19,9 +18,9 @@ int main()
 
         // fazendo o contador andar
         k_color('g');
-        f_rotate(45);
+        kf_rotate('t',45);
         k_write(5 + cont++, 11, "#");
-        f_rotate(0);
+        kf_rotate('t',0);
 
         // imprimindo o número de contagem
         k_color('r');

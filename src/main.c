@@ -5,9 +5,10 @@
 #include "../exemplos/jogos/rpg/rpg.h"
 #include "../exemplos/jogos/nave/nave.h"
 
-int main()
+int main2()
 {
-    main_nave();
+ //   main_nave();
+    kip_test_cores();
     return 1;
 }
 

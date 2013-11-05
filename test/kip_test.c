@@ -174,8 +174,8 @@ void kip_test_cores(){
             k_plot(i, 2);
 
             k_color('K');
-            kf_rotate('t',-15);
-            k_write(i, 1.2, "%c", cores[i]);
+            kf_rotate('t',0);
+            k_write(i, 1, "%c", cores[i]);
         }
 
         k_wait();
