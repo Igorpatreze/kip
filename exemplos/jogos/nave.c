@@ -2,7 +2,7 @@
 * Exemplo 2
 */
 #include <stdio.h>
-#include "../../../src/kip.h"
+#include "../../src/kip.h"
 #include <math.h>
 
 //eu que fiz esse daqui
@@ -52,9 +52,15 @@ int main_nave()
         }
         x += vx;
         y += vy;
+        kf_zoom(2,2);
+        k_write(10,10,"Minha nave favorita");
+        kf_open();
+            kf_zoom(3,5);
+            kf_rotate(angulo - 90);
+            k_draw(x,y,&nave[0][0],10,10);
+        kf_close();
+        k_write(10,30,"Minha nave favorita");
 
-        kf_set('i',(ks_fmt){0,0,3,3,angulo-90});
-        k_draw(x,y,&nave[0][0],10,10);
 
         k_sleep(100);
     }

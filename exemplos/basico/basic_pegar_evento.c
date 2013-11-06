@@ -2,7 +2,7 @@
    Exemplo 2 */
 #include <kip.h>
 
-int main_evento()
+int main_basic_evento()
 {
     // Open a new window for drawing.
     k_open(1000, 500, "Exemplo 2");
@@ -18,10 +18,11 @@ int main_evento()
 
         // fazendo o contador andar
         k_color('g');
-        kf_rotate('t',45);
-        k_write(5 + cont++, 11, "#");
-        kf_rotate('t',0);
-
+        kf_open();
+            kf_rotate(45);
+            kf_zoom(3,3);
+            k_write(5 + (cont++)/5.0, 11, "#");
+        kf_close();
         // imprimindo o número de contagem
         k_color('r');
         k_write(5, 13, "Contador %d", cont);

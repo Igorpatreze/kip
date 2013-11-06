@@ -1,5 +1,4 @@
-#include "rpg.h"
-#include "../../../src/kip.h"
+#include "../../src/kip.h"
 
 void show_heroi(int x, int y, int xflip, int rot)
 {
@@ -16,11 +15,11 @@ void show_heroi(int x, int y, int xflip, int rot)
         {"   w  w   "}
     };
 
-    kf_set('i',(ks_fmt){0,0,4,4,rot});
-    k_draw(x, y, &(heroi[10][10]),10,10);
+    kf_set((ks_fmt){xflip,0,4,4,rot});
+    k_draw(x, y, &(heroi[0][0]),10,10);
 }
 
-int main_rpg()
+int main_heroi()
 {
     k_open(1000, 700, "Rpg");
     k_block(40);
@@ -30,7 +29,7 @@ int main_rpg()
     {
         k_clear('K');
         show_heroi(10,10,0,i);
-        k_sleep(50);
+        k_sleep(100);
     }
     k_wait();
     return 0;

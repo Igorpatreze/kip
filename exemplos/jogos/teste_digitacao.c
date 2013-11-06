@@ -2,39 +2,47 @@
    Tecla saindo
    */
 
-#include <kfup.h>
+#include "../../src/kip.h"
+#include <stdio.h>
 
 float ytecla;
-int xtecla;
+float xtecla;
+int xflip;
+float rotacao;
 int game_over = 0;
 
 char gerar_tecla(){
-    char e = util_rand()%26+'a';
-    xtecla = 20*(util_rand()%25 +2);
+    char e = km_rand()%26+'a';
+    xtecla = (km_rand()%25 +2);
     ytecla = 0;
+    rotacao = km_rand()%360;
+    xflip  = km_rand()%2;
     return e;
 }
 
 void atualizar_pos(){
-    ytecla += 2;
+    ytecla += 0.2;
 }
 
 void print_tecla(char e){
-    font_color(color_BLACK);
-    pen_pix(xtecla,ytecla);
-    pen_write("%c",e);
-
-    font_color(color_green);
-    pen_pix(xtecla,ytecla+2);
-    pen_write("%c",e);
+    kf_open();
+        kf_zoom(4,4);
+        //kf_flip(xflip, 0);
+        kf_rotate(rotacao);
+        k_color('K');
+        k_write(xtecla,ytecla, "%c",e);
+        k_color('g');
+        k_write(xtecla,ytecla+0.2, "%c",e);
+    kf_close();
 }
 
-int main(){
+int main_dig(){
 
-    canvas_open(1000,800,"Exemplo 2");
-    font_zoom(2);
-
-    font_color(color_green);
+    k_open(1000,750,"Exemplo 2");
+    k_block(20);
+    putchar(5==5 - '1');
+    puts("");
+    k_color('g');
     char e =(char) 0;//inicializando com quaisquer valores que sejam diferentes
     int  c =       1;
     int cont = 0;
@@ -46,44 +54,42 @@ int main(){
     while(cont < MAX && game_over==0) {
 
         e = gerar_tecla();
-        pen_move(0,limite_inferior-cont);
-        pen_write("################################################################");
+        k_write(0,limite_inferior-cont, \
+        "################################################################");
         while(1){
 
-
-            if(event_is_waiting()){
-                c=event_get();
+            if(k_event_waiting()){
+                c=k_wait();
                 if(c == (int) e){
                     cont++;
-                    canvas_clear();
+                    k_clear('K');
                     break;
                 }
             }
             atualizar_pos();
-            if((ytecla/20)>=limite_inferior-cont){
+            if(ytecla>=limite_inferior-cont){
                 game_over = 1;
                 break;
             }
             print_tecla(e);
 
-            pen_move(0,0);
-
-            pen_write("Pontos faltantes :%d",MAX -cont);
-            canvas_update();
-            util_msleep(30 - cont);
+            k_write(0,0,"Pontos faltantes %d :", MAX -cont);
+            k_color('k');
+            k_write(49,36,"%c",e);
+            k_color('g');
+            k_sleep(30 - cont/1.5);
         }
     }
 
-    canvas_clear();
-    pen_move(0,10);
+    k_clear('K');
     if (game_over)
-        pen_write("Treine mais meu filho!\n");
+        k_write(0,10,"Treine mais meu filho!\n");
     else
-        pen_write("Voce eh quase um X-MEN, parabens Wolverine!\n");
+        k_write(0,10,"Voce eh quase um X-MEN, parabens Wolverine!\n");
 
 
-    pen_write("Aperter enter para sair!");
-    while(event_get() != key_ENTER);
+    k_write(0,11,"Aperter enter para sair!");
+    while(k_wait() != KEY_ENTER);
 
     return 0;
 }

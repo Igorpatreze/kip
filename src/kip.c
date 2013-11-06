@@ -455,83 +455,65 @@ void k_mp3_stop(char *path){
 /* ######## FUNCOES DE FORMATACAO     ######### */
 /* ############################################ */
 
-int test_type_error(char type)
+typedef struct{
+    ks_fmt def;
+    ks_fmt block;
+    int  in_env;
+}ks_fmt_env;
+
+ks_fmt_env * kf_get_env()
 {
-    if(type == 't' || type == 'i' || type == 'p')
-        return 0;
-    fprintf(stderr, "Flag inexistente\n");
-    return 1;
-}
-
-//Fornece uma variavel global para as funcoes de formatacao
-ks_fmt * kt_get(char type)
-{
-    test_type_error(type);
-
-    static ks_fmt ft = {0, 0, 2, 2, 0};
-    static ks_fmt fi = {0, 0, 2, 2, 0};
-    static ks_fmt dummy = {0, 0, 1, 1, 0};
-
-    if(type == 't')
-        return &ft;
-    if(type == 'i')
-        return &fi;
-    if(type == 'p')
-        return &(kp_get()->fmt);
-
-    return &dummy;
-}
-
-void kf_reset(char type)
-{
-    if(test_type_error(type))  return;
-
-    if(type == 't')
+    static ks_fmt_env env;
+    static int init = 1;
+    if(init)
     {
-        *(kt_get('t')) = (ks_fmt){0,0,2,2,0};
-        return;
+        init = 0;
+        env.def   = (ks_fmt){0,0,2,2,0};
+        env.block = (ks_fmt){0,0,2,2,0};
+        env.in_env  = 0;
     }
-    if(type == 'i')
-    {
-        *(kt_get('i')) = (ks_fmt){0,0,2,2,0};
-        return;
-    }
-    if(type == 'p')
-    {
-        *(kt_get('p')) = (ks_fmt){0,0,1,1,0};
-        return;
-    }
+    return &env;
 }
 
-void kf_zoom(char type , float xscale, float yscale)
+ks_fmt * kf_get()
 {
-    if(test_type_error(type))  return;
-    kt_get(type)->xzoom = xscale;
-    kt_get(type)->yzoom = yscale;
+    ks_fmt_env *p = kf_get_env();
+    if(p->in_env)
+        return &(p->block);
+    return &(p->def);
 }
 
-void kf_flip(char type, int xflag, int yflag)
-{
-    if(test_type_error(type))  return;
-    kt_get(type)->xflip = xflag;
-    kt_get(type)->yflip = yflag;
+void kf_open(){
+    ks_fmt_env *p = kf_get_env();
+    p->in_env = 1;
+    p->block = p->def;
 }
 
-void kf_rotate(char type, float angle)
-{
-    if(test_type_error(type))  return;
-    kt_get(type)->rot = angle;
+void kf_close(){
+    ks_fmt_env *p = kf_get_env();
+    p->in_env = 0;
 }
 
-void kf_set    (char type, ks_fmt fmt)
+void kf_zoom(float xscale, float yscale)
 {
-    if(test_type_error(type))  return;
-    *(kt_get(type)) = fmt;
+    kf_get()->xzoom = xscale;
+    kf_get()->yzoom = yscale;
 }
 
-ks_fmt kf_get(char type)
+void kf_flip(int xflag, int yflag)
 {
-    return *(kt_get(type));
+    kf_get()->xflip = xflag;
+    kf_get()->yflip = yflag;
+}
+
+void kf_rotate(float angle)
+{
+    kf_get()->rot = angle;
+}
+
+void kf_set    (ks_fmt fmt)
+{
+    *(kf_get()) = fmt;
 }
 
 /* ############################################ */
@@ -724,7 +706,7 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
 
 void k_draw(float x, float y, const char *address, int nlin, int ncol)
 {
-    ks_fmt fmt = *(kt_get('i'));
+    ks_fmt fmt = *(kf_get('i'));
     int block = k_info().block;
     ii_draw(x * block, y * block, address, nlin, ncol, fmt);
 }
@@ -758,7 +740,7 @@ void ii_vwrite(float x, float y, ks_fmt fmt, const char *str)
 void k_write(float x, float y, const char *format, ...)
 {
     ii_FORMAT2STR;
-    ks_fmt fmt = *(kt_get('t'));
+    ks_fmt fmt = *(kf_get('t'));
     ii_vwrite(x,y,fmt,str);
 }
 
@@ -782,6 +764,7 @@ ks_pen ip_new(int delay){
     pen.head = 0;
     pen.isdown  = 1;
     pen.delay   = delay;
+    pen.is_fixed = 0;
 
     pen.xcenter = 0;
     pen.ycenter = 0;
@@ -816,6 +799,7 @@ void __plot_line(int x1,int y1,int x2,int y2, float delay){
 void ip_fix(ks_pen *kp, double x, double y){
     kp->xcenter = x;
     kp->ycenter = y;
+    kp->is_fixed = 1;
 
     kp->x = 0;
     kp->y = 0;
@@ -827,12 +811,18 @@ void ip_goto( ks_pen *kp, double xdest, double ydest)
 {
     ks_point pactual ={kp->x, kp->y};
     ks_point pdest   ={xdest, ydest};
+    ks_fmt fmt = {0, 0, 1, 1, 0};
+    if(kp->is_fixed)
+        fmt = kp->fmt;
+
     if(kp->isdown)
     {
         ks_point center = {kp->xcenter, kp->ycenter};
-        ks_point abs_orig = ii_point_fmt(center,pactual, kp->fmt);
-        ks_point abs_dest = ii_point_fmt(center,pdest  , kp->fmt);
-        __plot_line(abs_orig.x, abs_orig.y, abs_dest.x, abs_dest.y, kp->delay);
+        ks_point abs_orig = ii_point_fmt(center,pactual, fmt);
+        ks_point abs_dest = ii_point_fmt(center,pdest  , fmt);
+        __plot_line(abs_orig.x, abs_orig.y,
+                    abs_dest.x, abs_dest.y,
+                    kp->delay);
     }
     kp->x = xdest;
     kp->y = ydest;
@@ -846,7 +836,7 @@ void ip_fd(ks_pen *kp, double px)
     ip_goto(kp, nx, ny );
 }
 
-void ip_polig(ks_pen *kp, double xc, double yc, double angle, int steps)
+void ip_arc(ks_pen *kp, double xc, double yc, double angle, int steps)
 {
     double xorigin = kp->x;
     double yorigin = kp->y;
@@ -869,6 +859,8 @@ ks_pen * kp_get(){
         init = 0;
         pen = ip_new(0);
     }
+
+    pen.fmt = *(kf_get());
     return &pen;
 }
 //ks_pen kp_get(){
@@ -905,33 +897,40 @@ void kp_home()
 {
     *(kp_get()) = ip_new(kp_get()->delay);
 }
-
+/* ######## CMDS de DESENHO DA PEN GLOBAL ######*/
+/* Eles chamam comandos internos de desenho
+ * antes de cada um é necessario atualizar a
+ * formatacao da caneta global pegando o valor do
+ * ambiente corrente */
 void kp_goto(double xdest, double ydest)
 {
+    kp_get()->fmt = *(kf_get());
     ip_goto(kp_get(), xdest, ydest);
 }
+void kp_fd(double px)
+{
+    kp_get()->fmt = *(kf_get());
+    ip_fd(kp_get(), px);
+}
+void kp_arc(double xcenter, double ycenter, double angle, int steps)
+{
+    kp_get()->fmt = *(kf_get());
+    ip_arc(kp_get(), xcenter, ycenter, angle, steps);
+}
+/* FIM DOS COMANDOS QUE CHAMAM COMANDOS INTERNOS DE DESENHO */
 
-void kp_line(double ax, double ay, double bx, double by)
+void kp_drag(double ax, double ay, double bx, double by)
 {
     kp_up();
     kp_goto(ax,ay);
     kp_down();
     kp_goto(bx, by);
 }
-
 void kp_lt (double degrees){ kp_get()->head += degrees; }
 void kp_rt (double degrees){ kp_lt(degrees*(-1)); }
 
-void kp_fd(double px)
-{
-    ip_fd(kp_get(), px);
-}
 void kp_bk(double px) { kp_fd(px*(-1));}
 
-void kp_polig(double xcenter, double ycenter, double angle, int steps)
-{
-    ip_polig(kp_get(), xcenter, ycenter, angle, steps);
-}
 /* ############################################ */
 /* ##### BASE DE DADOS DE CARACTERES  #### */
 /* ############################################ */

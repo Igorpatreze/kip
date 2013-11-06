@@ -99,18 +99,19 @@ typedef struct{
 } ks_fmt;
 
 /* funcoes para formatacao */
-/* type pode ser
- *     't' para mudar a formatacao do texto
- *     'i' para mudar a formatacao das imagens
- *     'p' para mudar a formatacao da pen
- */
 
-void kf_reset  (char type);//volta para as configuracoes originais
-void kf_zoom   (char type, float xscale, float yscale);
-void kf_flip   (char type, int xflag, int yflag);
-void kf_rotate (char type, float angle);
-void kf_set    (char type, ks_fmt fmt);
-ks_fmt kf_get  (char type);
+/* Abre o escopo
+   O novo escopo eh iniciado com a formatacao default
+*/
+void kf_open();
+
+//fecha escopo de trans e volta as tranf default
+void kf_close();
+void kf_zoom   (float xscale, float yscale);
+void kf_flip   (int xflag, int yflag);
+void kf_rotate (float angle);
+void kf_set    (ks_fmt fmt);
+ks_fmt * kf_get  ();//retorna end das transformacoes
 
 /* ############################################ */
 /* ######## FUNCOES DE TEXTO E IMAGENS ######## */
@@ -203,6 +204,7 @@ typedef struct{
     double delay;// 0 instantaneous, delay em mseg para cada pixel plotado
     double xcenter;
     double ycenter;
+    int    is_fixed;
     ks_fmt fmt;
 } ks_pen;
 
@@ -233,10 +235,10 @@ void kp_lt (double degrees); //direita
 void kp_rt (double degrees); //esquerda
 
 //traça uma linha com a caneta
-void kp_line(double ax, double ay, double bx, double by);
+void kp_drag(double ax, double ay, double bx, double by);
 
 //dado o centro, percorre o angulo em tantos steps
-void kp_polig(double xcenter, double ycenter, double angle, int steps);
+void kp_arc(double xcenter, double ycenter, double angle, int steps);
 
 //transformacoes
 void kp_fix(double xcenter, double ycenter);
@@ -277,7 +279,7 @@ void ip_fd   (ks_pen *kp, double px);
 //desenha um poligono dado o centro(xc,yc) o angulo (360 eh o angulo todo)
 //o numero de passos(step 4 faz um quadrado se angulo = 360)
 //kp da a posicao inicial da caneta
-void ip_polig(ks_pen *kp, double xc, double yc, double angle, int steps);
+void ip_arc(ks_pen *kp, double xc, double yc, double angle, int steps);
 
 
 #endif // HW_H

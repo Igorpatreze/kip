@@ -1,6 +1,5 @@
 #include <math.h>
-#include <kfup.h>
-#include <unistd.h>
+#include "../../src/kip.h"
 
 #define DCHAO 30
 
@@ -27,22 +26,20 @@ int ychao;
 
 void desenhar_bolinha(){
     if(b.x != b.xf || b.y != b.yf || b.concentrar==2){
-        font_color('K');
-        pen_pix(b.x,b.y);
-        pen_write("%c",b.e);
+        k_color('K');
+        k_write(b.x, b.y, "%c",b.e);
 
-        font_color('W');
-        pen_pix(b.xf,b.yf);
-        pen_write("%c",b.ef);
+        k_color('W');
+        k_write(b.xf, b.yf, "%c",b.ef);
     }
 }
 
 void dretangulo(int x, int y, int l, int p){
-    pen_line(x  ,  y, x +l , y);
-    pen_line(x  ,y+p, x +l , y+p);
+    k_line(x  ,  y, x +l , y);
+    k_line(x  ,y+p, x +l , y+p);
 
-    pen_line(x  ,  y, x  , y+p);
-    pen_line(x +l ,y, x +l , y+p);
+    k_line(x  ,  y, x  , y+p);
+    k_line(x +l ,y, x +l , y+p);
 
 }
 
@@ -65,8 +62,8 @@ void init(){
     b.pousar = 0;
     b.concentrar =0;
 
-    canvas_open(xjanela,yjanela, "bolinha");
-    font_zoom(2);
+    k_open(xjanela,yjanela, "bolinha");
+    k_block(1);
 }
 
 void gravidade(){
@@ -123,22 +120,22 @@ void colisao(){
 }
 
 void teclado(){
-    if(event_is_waiting()){
+    if(k_event_waiting()){
         int c;
-        c = event_get();
+        c = k_wait();
         switch(c){
-            case key_RIGHT:
+            case KEY_RIGHT:
                 if(b.vx < 24)
                     b.vx+=6;
                 break;
-            case key_LEFT:
+            case KEY_LEFT:
                 if(b.vx > -24)
                     b.vx-=6;
                 break;
-            case key_UP:
+            case KEY_UP:
                 b.vy -= 20;
                 break;
-            case key_DOWN:
+            case KEY_DOWN:
                 if((int)b.y + 25 > ychao){
                     b.concentrar = 2;
                 }else{
@@ -146,7 +143,7 @@ void teclado(){
                     b.pousar = 1;
                 }
                 break;
-            case key_SPACE:
+            case ' ':
                 if((int)b.y + 25 > ychao){
                     b.vy = -20;
                     if (b.concentrar)
@@ -186,13 +183,13 @@ void mudar_sprite(){
 }
 
 void msg_texto(){
-    pen_pix(20, 580);
-    font_zoom(2);
-    pen_write("Use os direcionais para mover e espaco para pular");
-    font_zoom(2);
+    kf_open();
+        kf_zoom(2,2);
+        k_write(20,580,"Use os direcionais para mover e espaco para pular");
+    kf_close();
 }
 
-int main(){
+int main_mola(){
     init();
     msg_texto();
     while(1){
@@ -208,12 +205,10 @@ int main(){
         desenhar_chao();
 
         consolidar();
-
-        canvas_update();
-        util_msleep(50);
+        k_sleep(50);
         //canvas_clear();
     }
-    event_get();
+    k_wait();
     return 1;
 }
 

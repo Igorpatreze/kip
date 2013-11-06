@@ -139,12 +139,12 @@ void kip_test_sol(){
     int i;
     for (i=0;i<4000;i+=20){
         k_clear('K');
-        kf_rotate('p',i);
+        kf_rotate(i);
         kp_fix(400,300);
         kp_up();
         kp_fd(50+i/20);
         kp_down();
-        kp_polig(0,0 , -i, 30);
+        kp_arc(0,0 , -i, 30);
         k_sleep(100);
     }
     k_wait();
@@ -163,8 +163,8 @@ void kip_test_cores(){
         k_open(1000,500,"Primeiro teste");
         k_block(50);
         k_clear('w');//pinta o fundo de branco
-        kf_zoom('t',5,5);
-        kf_rotate('t',0);
+        kf_zoom(5,5);
+        kf_rotate(0);
         const char *cores = k_info().colors;
         int i;
         int t = strlen(cores);
@@ -174,7 +174,7 @@ void kip_test_cores(){
             k_plot(i, 2);
 
             k_color('K');
-            kf_rotate('t',0);
+            kf_rotate(0);
             k_write(i, 1, "%c", cores[i]);
         }
 
