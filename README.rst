@@ -28,10 +28,6 @@ Clone o repositório em uma pasta local e instale com os seguintes comandos::
     make
     make install
 
-Ou apenas execute o script::
-   
-    curl https://raw.github.com/senapk/kfup/master/kfup_install.sh | sh;
-
 
 Exemplos
 ========
