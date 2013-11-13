@@ -36,7 +36,7 @@ void print_tecla(char e){
     fmt_end();
 }
 
-int main(){
+int main_dig(){
 
     k_open(1000,750,"Exemplo 2");
     fmt_block(20);

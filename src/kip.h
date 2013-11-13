@@ -45,14 +45,8 @@
 /* Inicializa a janela */
 void k_open( int width, int height, const char *title );
 
-/* Muda a cor corrente */
-void k_color_rgb(int r, int g, int b );
-
 /* Repinta tudo com a cor de limpeza de fundo */
 void k_clear(char color);
-
-/* Repinta tudo com a cor de limpeza de fundo */
-void k_clear_rgb(int r, int g, int b );
 
 /* Espera pelo usuario efetuar algum evento e captura esse evento */
 char k_wait();
@@ -278,6 +272,20 @@ typedef struct{
     double x, y;
 } ks_point;
 
+typedef struct{
+    int r, g, b;
+}ks_color;
+
+/* Retorna o vetor interno que guarda as cores
+ * adicionar uma nova cor ao sistema pode ser
+ * feito usando
+ * ks_color *vec = ii_rgb_vector();
+ * vec[(int)'a'] = ks_color(144, 123, 233);
+ *
+ * Depois disso, a cor 'a' ja esta disponivel
+ *
+ */
+ks_color * ii_rgb_vector();
 //desenha como k_draw, mas recebe a fmt diretamente
 void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt);
 //desenha como k_write, mas recebe a fmt diretamente

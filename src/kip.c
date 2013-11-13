@@ -190,50 +190,43 @@ void k_flush()
 /* ######## MODULO DE CORES           ######### */
 /* ############################################ */
 
-typedef struct{
-    int r, g, b;
-}icolor;
-
-icolor __get_color(char color){
-    static icolor RGB[256];//todos os possiveis valores para um char
+ks_color * ii_rgb_vector()
+{
+    static ks_color RGB[256];//todos os possiveis valores para um char
     static int init = 1;
     if (init == 1)
     {
         init = 0;
         int i;
-        icolor color_null = {-1,-1,-1};
+        ks_color color_null = {-1,-1,-1};
         for (i = 0; i < 256; i++){
-            RGB[i] =(icolor) color_null;
+            RGB[i] =(ks_color) color_null;
         }
-        RGB['R'] =(icolor) {139, 0  , 0  };
-        RGB['r'] =(icolor) {255, 0  , 0  };
-        RGB['G'] =(icolor) {0  , 100, 0  };
-        RGB['g'] =(icolor) {0  , 255, 0  };
-        RGB['B'] =(icolor) {0  , 0  , 128};
-        RGB['b'] =(icolor) {0  , 0  , 255};
-        RGB['Y'] =(icolor) {255, 215, 0  };
-        RGB['y'] =(icolor) {255, 255, 0  };
-        RGB['C'] =(icolor) {0  , 139, 139};
-        RGB['c'] =(icolor) {0  , 255, 255};
-        RGB['M'] =(icolor) {148, 0  , 211};
-        RGB['m'] =(icolor) {255, 192, 203};
-        RGB['W'] =(icolor) {220, 245, 220};
-        RGB['w'] =(icolor) {255, 255, 255};
-        RGB['K'] =(icolor) {0  , 0  , 0  };
-        RGB['k'] =(icolor) {61 , 43 , 31 };
+        RGB['R'] =(ks_color) {139, 0  , 0  };
+        RGB['r'] =(ks_color) {255, 0  , 0  };
+        RGB['G'] =(ks_color) {0  , 100, 0  };
+        RGB['g'] =(ks_color) {0  , 255, 0  };
+        RGB['B'] =(ks_color) {0  , 0  , 128};
+        RGB['b'] =(ks_color) {0  , 0  , 255};
+        RGB['Y'] =(ks_color) {255, 215, 0  };
+        RGB['y'] =(ks_color) {255, 255, 0  };
+        RGB['C'] =(ks_color) {0  , 139, 139};
+        RGB['c'] =(ks_color) {0  , 255, 255};
+        RGB['M'] =(ks_color) {148, 0  , 211};
+        RGB['m'] =(ks_color) {255, 192, 203};
+        RGB['W'] =(ks_color) {220, 245, 220};
+        RGB['w'] =(ks_color) {255, 255, 255};
+        RGB['K'] =(ks_color) {0  , 0  , 0  };
+        RGB['k'] =(ks_color) {61 , 43 , 31 };
     }
-    return RGB[(int)color];
+    return &(RGB[0]);
 }
 
-void fmt_color( char color ){
-    if(color == fmt_get()->color)
-        return;
-    icolor kc = __get_color(color);
-    if(kc.r == -1)
-        return;
-    fmt_get()->color = color;
-    k_color_rgb(kc.r,kc.g,kc.b);
+ks_color __get_color(char color){
+    ks_color * vec = ii_rgb_vector();
+    return vec[(int)color];
 }
+
 
 /* Change the current drawing color. */
 void k_color_rgb( int r, int g, int b )
@@ -246,6 +239,16 @@ void k_color_rgb( int r, int g, int b )
     color.blue = b<<8;
     XAllocColor(gfx_display,gfx_colormap,&color);
     XSetForeground(gfx_display, gfx_gc, color.pixel);
+}
+
+void fmt_color( char color ){
+    if(color == fmt_get()->color)
+        return;
+    ks_color kc = __get_color(color);
+    if(kc.r == -1)
+        return;
+    fmt_get()->color = color;
+    k_color_rgb(kc.r,kc.g,kc.b);
 }
 
 /* Change the current background color. */
@@ -266,13 +269,21 @@ void __clear_color(char color){
 
     if(color == __kip()->clear)
         return;
-    icolor kc = __get_color(color);
+    ks_color kc = __get_color(color);
     if(kc.r == -1)
         return;
     __kip()->clear = color;
     __clear_color_rgb(kc.r,kc.g,kc.b);
 
 }
+
+
+void k_clear_rgb(int r, int g, int b )
+{
+    __clear_color_rgb(r, g, b);
+    XClearWindow(gfx_display,gfx_window);
+}
+
 /* Clear the graphics window to the background color. */
 void k_clear(char color)
 {
@@ -280,11 +291,6 @@ void k_clear(char color)
     XClearWindow(gfx_display,gfx_window);
 }
 
-void k_clear_rgb(int r, int g, int b )
-{
-    __clear_color_rgb(r, g, b);
-    XClearWindow(gfx_display,gfx_window);
-}
 
 /* ############################################ */
 /* ######## FUNCOES DE DESENHO     ############ */
