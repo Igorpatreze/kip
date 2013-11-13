@@ -6,38 +6,38 @@ typedef struct{
 
 void bicicleta(bike *b)
 {
-    kp_fix(b->x*k_info().block, b->y*k_info().block);
-    kp_up();
-    kp_goto(-30, 10);
-    kp_down();
-    kp_arc(-40, 10, 360, 40);
+    int raio = 15;
+    int base = base = 10;
+    int lado = 40;
 
-    kp_goto( 30, 10);
+    pen_fix(b->x*fmt_get()->block, b->y*fmt_get()->block);
+    pen_up();
+    pen_goto(-lado, base);
+    pen_fd(raio);
+    pen_down();
+    pen_curve(-lado, base, 360, 40);
 
-    kp_goto(30, 10);
-    kp_arc( 40, 10, 360, 40);
+    pen_goto( 30, 10);
+
+    pen_goto(30, 10);
+    pen_curve( 40, 10, 360, 40);
 
     //aros
-    kp_up();
-    kp_goto(-40,10);
-    kp_down();
+    pen_up();
+    pen_goto(-40,10);
+    pen_down();
 
     int i;
     for(i = 0; i<6;i++ )
     {
-        kp_seth(i*60 + b->rot);
-        kp_fd(10);
-        kp_bk(10);
+        pen_seth(i*60 + b->rot);
+        pen_fd(10);
+        pen_bk(10);
     }
-
-
-
-
-
-    kp_unfix();
+    pen_unfix();
 }
 
-int main()
+int main_bike()
 {
     k_open(800,600, "Bike");
     bike b;

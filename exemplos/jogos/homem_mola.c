@@ -26,10 +26,10 @@ int ychao;
 
 void desenhar_bolinha(){
     if(b.x != b.xf || b.y != b.yf || b.concentrar==2){
-        k_color('K');
+        fmt_color('K');
         k_write(b.x, b.y, "%c",b.e);
 
-        k_color('W');
+        fmt_color('W');
         k_write(b.xf, b.yf, "%c",b.ef);
     }
 }
@@ -63,7 +63,7 @@ void init(){
     b.concentrar =0;
 
     k_open(xjanela,yjanela, "bolinha");
-    k_block(1);
+    fmt_block(1);
 }
 
 void gravidade(){
@@ -183,10 +183,10 @@ void mudar_sprite(){
 }
 
 void msg_texto(){
-    kf_open();
-        kf_zoom(2,2);
+    fmt_begin();
+        fmt_zoom(2,2);
         k_write(20,580,"Use os direcionais para mover e espaco para pular");
-    kf_close();
+    fmt_end();
 }
 
 int main_mola(){

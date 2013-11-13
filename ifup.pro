@@ -13,7 +13,9 @@ SOURCES += src/main.c \
     exemplos/basico/basic_cores.c \
     exemplos/jogos/teste_digitacao.c \
     exemplos/jogos/homem_mola.c \
-    exemplos/jogos/bicicleta.c
+    exemplos/jogos/bicicleta.c \
+    exemplos/recursao/fractais.c \
+    exemplos/lab.cpp
 
 HEADERS += \
     src/kip.h \

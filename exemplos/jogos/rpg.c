@@ -15,14 +15,14 @@ void show_heroi(int x, int y, int xflip, int rot)
         {"   w  w   "}
     };
 
-    kf_set((ks_fmt){xflip,0,4,4,rot});
+    fmt_config((ks_fmt){xflip,0,4,4,rot, 'w', 40});
     k_draw(x, y, &(heroi[0][0]),10,10);
 }
 
-int main_heroi()
+int main_rpg()
 {
     k_open(1000, 700, "Rpg");
-    k_block(40);
+    fmt_block(40);
     show_heroi(10,10,0,0);
     int i;
     for(i = 0; i <= 360; i+=30)

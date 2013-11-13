@@ -40,17 +40,10 @@
 /* ############################################ */
 
 
-/* Agrupa pixels em blocos, para funcoes
- * k_write, k_xpos, k_ypos, k_image, k_draw
- * O default eh 1, que funciona como movimentação em pixeis */
-void k_block(int size);
+
 
 /* Inicializa a janela */
 void k_open( int width, int height, const char *title );
-
-/* Muda a cor corrente, opcoes:
- * R, r, G, g, B, b, Y, y, C, c, M, m, W, w, K, k */
-void k_color( char color);
 
 /* Muda a cor corrente */
 void k_color_rgb(int r, int g, int b );
@@ -96,22 +89,38 @@ typedef struct{
     float xzoom;//x zoom, 1 normal, 0.5 half, 2 doubled
     float yzoom;
     double rot; //rotation angle, in degrees
+
+    char color;  //atual cor de risco
+    int  block;  //atual tamanho do bloco
+
 } ks_fmt;
 
+#define FMT_DEFAULT (ks_fmt) {0, 0, 1, 1, 0, 'w', 1}
 /* funcoes para formatacao */
 
-/* Abre o escopo
-   O novo escopo eh iniciado com a formatacao default
-*/
-void kf_open();
+// Abre o escopo temporário de formatacao
+//   O novo escopo eh iniciado com a copia do escopo default
+void fmt_begin();
 
-//fecha escopo de trans e volta as tranf default
-void kf_close();
-void kf_zoom   (float xscale, float yscale);
-void kf_flip   (int xflag, int yflag);
-void kf_rotate (float angle);
-void kf_set    (ks_fmt fmt);
-ks_fmt * kf_get  ();//retorna end das transformacoes
+//fecha o escopo temporario
+void fmt_end();
+
+/* Agrupa pixels em blocos, para funcoes
+ * k_write, k_xpos, k_ypos, k_image, k_draw
+ * O default eh 1, que funciona como movimentação em pixeis */
+void fmt_block(int size);
+
+/* Muda a cor corrente, opcoes:
+ * R, r, G, g, B, b, Y, y, C, c, M, m, W, w, K, k */
+void fmt_color( char color);
+
+//padrao flip x=0, y=0, zoom x=2, y=2, rot = 0, color 'w', block 1
+void fmt_reset  ();//reseta as configuracoes do escopo atual
+void fmt_zoom   (float xscale, float yscale);
+void fmt_flip   (int xflag, int yflag);
+void fmt_rotate (float angle);
+void fmt_config (ks_fmt fmt);
+ks_fmt * fmt_get();//retorna endereco das transformacoes
 
 /* ############################################ */
 /* ######## FUNCOES DE TEXTO E IMAGENS ######## */
@@ -169,7 +178,10 @@ double km_angle(double ax, double ay, double bx, double by);
 /* Distancia entre dois pontos */
 double km_dist(double ax, double ay, double bx, double by);
 
-/* Funcao para rotacionar um ponto em relacao ao centro */
+/* Funcao para rotacionar um ponto em relacao a um centro
+ * cx e cy coordenadas do centro,
+ * px e py endereco do ponto a ser rotacionado
+ * O resultado da rotação é lançado em px py. */
 void km_coor_rot(double cx, double cy,
                  double *px, double *py, double degrees);
 
@@ -182,7 +194,7 @@ typedef struct{
     int  width;  //largura da janela
     int  height; //altura da janela
     char color;  //atual cor de risco
-    char clear;//atual cor de fundo
+    char clear;  //cor de fundo
     int  block;  //atual tamanho do bloco
     int  letter;  //tamanho minimo de uma letra
     const char *colors;//string com a lista das cores disponiveis
@@ -209,40 +221,51 @@ typedef struct{
 } ks_pen;
 
 //informacoes
-ks_pen * kp_get();//retorna a variavel global que define a caneta
-double kp_xcor ();
-double kp_ycor ();
-double kp_delay();
-double kp_head () ;
+ks_pen * pen_get();//retorna a variavel global que define a caneta
+double pen_xcor ();
+double pen_ycor ();
+double pen_delay();
+double pen_head () ;
 
 //setando variaveis
-void kp_setx(double x);//altera a posicao x
-void kp_sety(double y);//altera a posicao y
-void kp_seth(double head);//Direcao: 0-direita, 90-norte, 270-esquerda
-void kp_setd(float delay);//0 instantaneous
+void pen_setx(double x);//altera a posicao x
+void pen_sety(double y);//altera a posicao y
+void pen_seth(double head);//Direcao: 0-direita, 90-norte, 270-esquerda
+void pen_setd(float delay);//0 instantaneous
 
 //mudando estado
-void kp_up();
-void kp_down();
+void pen_up();
+void pen_down();
 
 //movimenta a caneta
-void kp_home();//vai para o centro da tela com heading = 0
-void kp_goto(double xdest, double ydest);
-void kp_fd(double dist); //pra frente
-void kp_bk(double dist); //pra tras
+void pen_home();//vai para o centro da tela com heading = 0
+void pen_goto(double xdest, double ydest);
+void pen_fd(double dist); //pra frente
+void pen_bk(double dist); //pra tras
 
-void kp_lt (double degrees); //direita
-void kp_rt (double degrees); //esquerda
+void pen_lt (double degrees); //direita
+void pen_rt (double degrees); //esquerda
 
 //traça uma linha com a caneta
-void kp_drag(double ax, double ay, double bx, double by);
+void pen_drag(double ax, double ay, double bx, double by);
 
-//dado o centro, percorre o angulo em tantos steps
-void kp_arc(double xcenter, double ycenter, double angle, int steps);
+//A partir da posicao atual de pen faz uma curva
+//em relacao ao centro, percorrendo o angulo em tantos steps.
+void pen_curve(double xcenter, double ycenter, double angle, int steps);
+
+//Tal qual kp_curve, mas usa a posicao atual de pen como centro.
+//Desenha um arco entre o angulo inicial beg_ang e o angulo.
+//final end_ang, com o número de passos dados por steps.
+//Funciona como um compasso de desenho.
+void pen_compass(double radius, double beg_ang, double end_ang, int steps);
 
 //transformacoes
-void kp_fix(double xcenter, double ycenter);
-void kp_unfix();
+//apos kp_fix todo comando de transformacao sera aplicado
+//a caneta, tendo o centro informado como centro do desenho
+void pen_fix(double xcenter, double ycenter);
+
+//desabilidata as transformações
+void pen_unfix();
 
 /* ############################################ */
 /* ##########    FUNCOES INTERNAS   ########### */

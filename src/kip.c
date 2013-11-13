@@ -49,10 +49,8 @@ ks_kip * __kip(){
         init = 0;
         info.height = 0;
         info.width  = 0;
-        info.color  = 'w';
-        info.clear  = 'B';
-        info.block  = 1;
         info.colors = "RrGgBbYyCcMmWwKk";
+        info.clear  = 'K';
         info.letter = 10;
         struct timeval tv;
         gettimeofday(&tv, 0);//salva o tempo inicial
@@ -62,12 +60,14 @@ ks_kip * __kip(){
 }
 
 ks_kip k_info(){
-    return *(__kip());
+    ks_kip kip = *(__kip());
+    kip.block = fmt_get()->block;
+    kip.color = fmt_get()->color;
+
+    return kip;
 }
 
-void k_block(int size){
-    __kip()->block = size;
-}
+
 
 /* ############################################ */
 /* ######## MODULO GRAFICO BASICO     ######### */
@@ -171,12 +171,12 @@ char k_wait()
 
 float k_xpos()
 {
-    return (float)saved_xpos/__kip()->block;
+    return (float)saved_xpos/fmt_get()->block;
 }
 
 float k_ypos()
 {
-    return (float)saved_ypos/__kip()->block;
+    return (float)saved_ypos/fmt_get()->block;
 }
 
 /* Flush all previous output to the window. */
@@ -225,13 +225,13 @@ icolor __get_color(char color){
     return RGB[(int)color];
 }
 
-void k_color( char color ){
-    if(color == __kip()->color)
+void fmt_color( char color ){
+    if(color == fmt_get()->color)
         return;
     icolor kc = __get_color(color);
     if(kc.r == -1)
         return;
-    __kip()->color = color;
+    fmt_get()->color = color;
     k_color_rgb(kc.r,kc.g,kc.b);
 }
 
@@ -263,6 +263,7 @@ void __clear_color_rgb( int r, int g, int b )
     XChangeWindowAttributes(gfx_display,gfx_window,CWBackPixel,&attr);
 }
 void __clear_color(char color){
+
     if(color == __kip()->clear)
         return;
     icolor kc = __get_color(color);
@@ -270,6 +271,7 @@ void __clear_color(char color){
         return;
     __kip()->clear = color;
     __clear_color_rgb(kc.r,kc.g,kc.b);
+
 }
 /* Clear the graphics window to the background color. */
 void k_clear(char color)
@@ -291,7 +293,7 @@ void k_clear_rgb(int r, int g, int b )
 
 void k_line( float x1, float y1, float x2, float y2 )
 {
-    int block = k_info().block;
+    int block = fmt_get()->block;
     ii_line(x1*block,y1*block, x2*block, y2*block);
 }
 
@@ -304,7 +306,7 @@ void ii_line(int x1, int y1, int x2, int y2 )
 //plota um pixel ou um quadrado fechado
 void k_plot(float x , float y)
 {
-    int block = k_info().block;
+    int block = fmt_get()->block;
     x *= block;
     y *= block;
     int i;
@@ -318,7 +320,7 @@ void k_square( float xc, float yc, int side, int filled)
     int i;
     double x, y;
 
-    int block = k_info().block;
+    int block = fmt_get()->block;
     if(side == 0)
         side = block;
     x = xc * block - side/2;//convertendo para posicoes em pixels
@@ -350,7 +352,7 @@ void k_polig(double xc, double yc, char flag,
 {
     if (sides < 3)
         return;
-    int block = k_info().block;
+    int block = fmt_get()->block;
     xc *= block;
     yc *= block;
 
@@ -457,63 +459,67 @@ void k_mp3_stop(char *path){
 
 typedef struct{
     ks_fmt def;
-    ks_fmt block;
+    ks_fmt temp;
     int  in_env;
 }ks_fmt_env;
 
-ks_fmt_env * kf_get_env()
+ks_fmt_env * __env()
 {
     static ks_fmt_env env;
     static int init = 1;
     if(init)
     {
         init = 0;
-        env.def   = (ks_fmt){0,0,2,2,0};
-        env.block = (ks_fmt){0,0,2,2,0};
+        env.def   = (ks_fmt){0,0,2,2,0,'w',1};
+        env.temp = FMT_DEFAULT;
         env.in_env  = 0;
     }
     return &env;
 }
 
-ks_fmt * kf_get()
+ks_fmt * fmt_get()
 {
-    ks_fmt_env *p = kf_get_env();
+    ks_fmt_env *p = __env();
     if(p->in_env)
-        return &(p->block);
+        return &(p->temp);
     return &(p->def);
 }
 
-void kf_open(){
-    ks_fmt_env *p = kf_get_env();
+void fmt_begin(){
+    ks_fmt_env *p = __env();
     p->in_env = 1;
-    p->block = p->def;
+    p->temp = p->def;
 }
 
-void kf_close(){
-    ks_fmt_env *p = kf_get_env();
+void fmt_end(){
+    ks_fmt_env *p = __env();
     p->in_env = 0;
+    fmt_color(fmt_get()->color);
+}
+void fmt_block(int size){
+    fmt_get()->block = size;
+}
+void fmt_zoom(float xscale, float yscale)
+{
+    fmt_get()->xzoom = xscale;
+    fmt_get()->yzoom = yscale;
 }
 
-void kf_zoom(float xscale, float yscale)
+void fmt_flip(int xflag, int yflag)
 {
-    kf_get()->xzoom = xscale;
-    kf_get()->yzoom = yscale;
+    fmt_get()->xflip = xflag;
+    fmt_get()->yflip = yflag;
 }
 
-void kf_flip(int xflag, int yflag)
+void fmt_rotate(float angle)
 {
-    kf_get()->xflip = xflag;
-    kf_get()->yflip = yflag;
+    fmt_get()->rot = angle;
 }
 
-void kf_rotate(float angle)
+void fmt_config    (ks_fmt fmt)
 {
-    kf_get()->rot = angle;
-}
-
-void kf_set    (ks_fmt fmt)
-{
-    *(kf_get()) = fmt;
+    *(fmt_get()) = fmt;
+    fmt_color(fmt.color);
 }
 
 /* ############################################ */
@@ -683,7 +689,7 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
                 if(c == ' ')
                     continue;
                 if(c != '#')
-                    k_color(c);
+                    fmt_color(c);
                 //2 for para fazer o preenchimento do pixel
                 ks_point desl;
                 ks_point abs;
@@ -706,8 +712,8 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
 
 void k_draw(float x, float y, const char *address, int nlin, int ncol)
 {
-    ks_fmt fmt = *(kf_get('i'));
-    int block = k_info().block;
+    ks_fmt fmt = *(fmt_get('i'));
+    int block = fmt_get()->block;
     ii_draw(x * block, y * block, address, nlin, ncol, fmt);
 }
 
@@ -716,7 +722,7 @@ void ii_vwrite(float x, float y, ks_fmt fmt, const char *str)
 {
     int len = strlen(str);
     int i;
-    int block = k_info().block;
+    int block = fmt_get()->block;
     int letter = 10;
     for(i = 0; i < len; i++)
     {
@@ -740,7 +746,7 @@ void ii_vwrite(float x, float y, ks_fmt fmt, const char *str)
 void k_write(float x, float y, const char *format, ...)
 {
     ii_FORMAT2STR;
-    ks_fmt fmt = *(kf_get('t'));
+    ks_fmt fmt = *(fmt_get('t'));
     ii_vwrite(x,y,fmt,str);
 }
 
@@ -769,7 +775,7 @@ ks_pen ip_new(int delay){
     pen.xcenter = 0;
     pen.ycenter = 0;
 
-    pen.fmt = (ks_fmt){0,0,1,1,0};
+    pen.fmt = FMT_DEFAULT;
     return pen;
 }
 
@@ -811,7 +817,7 @@ void ip_goto( ks_pen *kp, double xdest, double ydest)
 {
     ks_point pactual ={kp->x, kp->y};
     ks_point pdest   ={xdest, ydest};
-    ks_fmt fmt = {0, 0, 1, 1, 0};
+    ks_fmt fmt = FMT_DEFAULT;
     if(kp->is_fixed)
         fmt = kp->fmt;
 
@@ -851,7 +857,7 @@ void ip_arc(ks_pen *kp, double xc, double yc, double angle, int steps)
 
 /* ##########          Funcoes      ########### */
 
-ks_pen * kp_get(){
+ks_pen * pen_get(){
     static ks_pen pen;
     static int init = 1;
     if(init == 1)
@@ -860,76 +866,88 @@ ks_pen * kp_get(){
         pen = ip_new(0);
     }
 
-    pen.fmt = *(kf_get());
+    pen.fmt = *(fmt_get());
     return &pen;
 }
 //ks_pen kp_get(){
 //    return *(kp_pen());
 //}
 
-void kp_setx(double x){kp_get()->x = x;}
-void kp_sety(double y){kp_get()->y = y;}
-void kp_setd(float delay){kp_get()->delay = delay;}
-void kp_seth(double head){ kp_get()->head = head; }
+void pen_setx(double x){pen_get()->x = x;}
+void pen_sety(double y){pen_get()->y = y;}
+void pen_setd(float delay){pen_get()->delay = delay;}
+void pen_seth(double head){ pen_get()->head = head; }
 
-double kp_xcor ()    {return kp_get()->x; }
-double kp_ycor ()    {return kp_get()->y; }
-double kp_delay(){return kp_get()->delay; }
-double kp_head () {return kp_get()->head; }
+double pen_xcor ()    {return pen_get()->x; }
+double pen_ycor ()    {return pen_get()->y; }
+double pen_delay(){return pen_get()->delay; }
+double pen_head () {return pen_get()->head; }
 // estado
-void kp_up()  { kp_get()->isdown = 0; }
-void kp_down(){ kp_get()->isdown = 1; }
+void pen_up()  { pen_get()->isdown = 0; }
+void pen_down(){ pen_get()->isdown = 1; }
 
 //movimentacao
 
 /* ############### METODOS GLOBAIS ########### */
-void kp_fix(double x, double y)
+void pen_fix(double x, double y)
 {
-    ip_fix(kp_get(), x, y);
+    ip_fix(pen_get(), x, y);
 }
 
-void kp_unfix()
+void pen_unfix()
 {
-    *kp_get() = ip_new(kp_get()->delay);
+    *pen_get() = ip_new(pen_get()->delay);
 }
 
-void kp_home()
+void pen_home()
 {
-    *(kp_get()) = ip_new(kp_get()->delay);
+    *(pen_get()) = ip_new(pen_get()->delay);
 }
 /* ######## CMDS de DESENHO DA PEN GLOBAL ######*/
 /* Eles chamam comandos internos de desenho
  * antes de cada um é necessario atualizar a
  * formatacao da caneta global pegando o valor do
  * ambiente corrente */
-void kp_goto(double xdest, double ydest)
+void pen_goto(double xdest, double ydest)
 {
-    kp_get()->fmt = *(kf_get());
-    ip_goto(kp_get(), xdest, ydest);
+    pen_get()->fmt = *(fmt_get());
+    ip_goto(pen_get(), xdest, ydest);
 }
-void kp_fd(double px)
+void pen_fd(double px)
 {
-    kp_get()->fmt = *(kf_get());
-    ip_fd(kp_get(), px);
+    pen_get()->fmt = *(fmt_get());
+    ip_fd(pen_get(), px);
 }
-void kp_arc(double xcenter, double ycenter, double angle, int steps)
+void pen_curve(double xcenter, double ycenter, double angle, int steps)
 {
-    kp_get()->fmt = *(kf_get());
-    ip_arc(kp_get(), xcenter, ycenter, angle, steps);
+    pen_get()->fmt = *(fmt_get());
+    ip_arc(pen_get(), xcenter, ycenter, angle, steps);
 }
 /* FIM DOS COMANDOS QUE CHAMAM COMANDOS INTERNOS DE DESENHO */
 
-void kp_drag(double ax, double ay, double bx, double by)
+void pen_drag(double ax, double ay, double bx, double by)
 {
-    kp_up();
-    kp_goto(ax,ay);
-    kp_down();
-    kp_goto(bx, by);
+    pen_up();
+    pen_goto(ax,ay);
+    pen_down();
+    pen_goto(bx, by);
 }
-void kp_lt (double degrees){ kp_get()->head += degrees; }
-void kp_rt (double degrees){ kp_lt(degrees*(-1)); }
 
-void kp_bk(double px) { kp_fd(px*(-1));}
+void pen_compass(double radius, double beg_ang, double end_ang, int steps)
+{
+    double x = pen_xcor();
+    double y = pen_ycor();
+    pen_seth(beg_ang);
+    pen_fd(radius);
+    pen_curve(x,y, end_ang - beg_ang, steps);
+    pen_setx(x);
+    pen_sety(y);
+}
+
+void pen_lt (double degrees){ pen_get()->head += degrees; }
+void pen_rt (double degrees){ pen_lt(degrees*(-1)); }
+
+void pen_bk(double px) { pen_fd(px*(-1));}
 
 /* ############################################ */
 /* ##### BASE DE DADOS DE CARACTERES  #### */

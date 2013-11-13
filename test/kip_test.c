@@ -5,17 +5,17 @@
 void tree(int tam){
     int dec = 20;
     if (tam > 5){
-        k_color('B');
-        kp_fd(tam);
-        kp_rt(20);
+        fmt_color('B');
+        pen_fd(tam);
+        pen_rt(20);
         tree(tam-dec);
 
-        kp_lt(40);
+        pen_lt(40);
         tree(tam-dec);
 
-        kp_rt(20);
-        k_color('K');
-        kp_bk(tam);
+        pen_rt(20);
+        fmt_color('K');
+        pen_bk(tam);
     }
 }
 void espiral(int tam)
@@ -24,8 +24,8 @@ void espiral(int tam)
     if(tam<10)
         return;
 
-    kp_fd(tam);
-    kp_rt(90);
+    pen_fd(tam);
+    pen_rt(90);
     espiral(tam-10);
 }
 
@@ -52,45 +52,45 @@ void boneco( int x, int y){
     }
     static int inc = 2;
     alterna(&high, size, 0, &inc );
-    kp_fix(x,y + high);
-    kp_up();
-    kp_goto(0,-20);
-    kp_down();
-    kp_seth(270);
-    kp_fd(50);
-    kp_lt(45);
-    kp_fd(20);
-    kp_bk(20);
-    kp_rt(90);
-    kp_fd(20);
-    kp_seth(180);//pe
+    pen_fix(x,y + high);
+    pen_up();
+    pen_goto(0,-20);
+    pen_down();
+    pen_seth(270);
+    pen_fd(50);
+    pen_lt(45);
+    pen_fd(20);
+    pen_bk(20);
+    pen_rt(90);
+    pen_fd(20);
+    pen_seth(180);//pe
     pe += 5;
-    kp_rt(pe%45);
-    kp_fd(10);
-    kp_up();
-    kp_goto(0,0);
+    pen_rt(pe%45);
+    pen_fd(10);
+    pen_up();
+    pen_goto(0,0);
 
 
-        kp_unfix();
+        pen_unfix();
 }
 
 void anda(int t){
     if(t<5)
         return;
-    kp_fd(t);
-    kp_lt(90);
+    pen_fd(t);
+    pen_lt(90);
     anda(t-5);
 }
 
 void recpol (double ang, int tam, int qtd){
     if(qtd == 0)
         return;
-    kp_fd(tam);
-    kp_lt(ang);
+    pen_fd(tam);
+    pen_lt(ang);
     recpol(ang, tam, qtd-1);
-    k_color('r');
-    kp_rt(ang);
-    kp_bk(tam);
+    fmt_color('r');
+    pen_rt(ang);
+    pen_bk(tam);
 }
 void poligon( int nlados ){
     double ang = 360/nlados;
@@ -100,7 +100,7 @@ void poligon( int nlados ){
 void kduck_teste1()
 {
     k_open(800,600,"oi");
-    kp_setd(0);
+    pen_setd(0);
     while(1)
     {
         boneco(100,100);
@@ -122,29 +122,29 @@ void matriz(int x, int y){
 void matriz2(int x, int y)
 {
     k_clear('W');
-    k_color('k');
+    fmt_color('k');
     int i, j;
     for(i = 0; i < y; i++)
         for(j = 0; j < x; j++)
         {
-            k_color('w');
+            fmt_color('w');
             k_plot(j,i);
-            k_color('r');
-            k_square(j+0.1,i+0.1,k_info().block*0.8, 1);
+            fmt_color('r');
+            k_square(j+0.1,i+0.1,fmt_get()->block *0.8, 1);
         }
 }
 void kip_test_sol(){
     k_open(800,600, "oi");
-    kp_setd(0);
+    pen_setd(0);
     int i;
     for (i=0;i<4000;i+=20){
         k_clear('K');
-        kf_rotate(i);
-        kp_fix(400,300);
-        kp_up();
-        kp_fd(50+i/20);
-        kp_down();
-        kp_arc(0,0 , -i, 30);
+        fmt_rotate(i);
+        pen_fix(400,300);
+        pen_up();
+        pen_fd(50+i/20);
+        pen_down();
+        pen_curve(0,0 , -i, 30);
         k_sleep(100);
     }
     k_wait();
@@ -152,29 +152,29 @@ void kip_test_sol(){
 
 void kip_test_polig(){
     k_open(800, 600, "oi");
-    k_block(1);
+    fmt_block(1);
     k_polig(200,200,'r', 100, 4, 1);
-    k_color('r');
+    fmt_color('r');
     k_polig(200,200,'s', 100, 4, 1);
     k_wait();
 }
 
 void kip_test_cores(){
         k_open(1000,500,"Primeiro teste");
-        k_block(50);
+        fmt_block(50);
         k_clear('w');//pinta o fundo de branco
-        kf_zoom(5,5);
-        kf_rotate(0);
+        fmt_zoom(5,5);
+        fmt_rotate(0);
         const char *cores = k_info().colors;
         int i;
         int t = strlen(cores);
         for( i = 0; i < t; i++)
         {
-            k_color(cores[i]);
+            fmt_color(cores[i]);
             k_plot(i, 2);
 
-            k_color('K');
-            kf_rotate(0);
+            fmt_color('K');
+            fmt_rotate(0);
             k_write(i, 1, "%c", cores[i]);
         }
 
@@ -183,7 +183,7 @@ void kip_test_cores(){
 void kip_teste1()
 {
     k_open(800,600,"oi");
-    k_block(40);
+    fmt_block(40);
     matriz2(15,15);
     k_wait();
 }
