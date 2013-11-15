@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Kip - Ultra easy C library for simple games in graphic mode or console mode : " />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Kip - Ultra easy C library for simple games in graphic mode or console mode</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/senapk/kip">View on GitHub</a>
+
+          <h1 id="project_title">Kip - Ultra easy C library for simple games in graphic mode or console mode</h1>
+          <h2 id="project_tagline"></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/senapk/kip/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/senapk/kip/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1></h1>
+
+<h1>
+<a name="kip" class="anchor" href="#kip"><span class="octicon octicon-link"></span></a>kip</h1>
+
+<p>Repositório da biblioteca gráfica kip para ensino de FUP.
+kip é um acrônimo para Knoledge is power, para simbolizar 
+o poder do aprendizado.</p>
+
+<p>O código fonte está na pasta src. </p>
+
+<p>Foi projetada para linux. As dependências são </p>
+
+<p>As dependências são o libX11-dev e mpg123.</p>
+
+<h1>
+<a name="instala%C3%A7%C3%A3o" class="anchor" href="#instala%C3%A7%C3%A3o"><span class="octicon octicon-link"></span></a>Instalação</h1>
+
+<p>Você só precisa instalar o libX11-dev e utilizar o arquivo kip.c e kip.h
+como biblioteca local. Mas se quiser realmente instalar na máquina, 
+primeiro instale todas as dependências::</p>
+
+<pre><code>sudo apt-get update
+sudo apt-get install libX11-dev curl wget mpg123 git
+</code></pre>
+
+<p>Clone o repositório em uma pasta local e instale com os seguintes comandos::</p>
+
+<pre><code>git clone https://github.com/senapk/kip
+cd kip/src/
+make
+make install
+</code></pre>
+
+<h1>
+<a name="exemplos" class="anchor" href="#exemplos"><span class="octicon octicon-link"></span></a>Exemplos</h1>
+
+<p>Para ver exemplos basta entrar na pasta exemplos.</p>
+
+<h1>
+<a name="tutoriais" class="anchor" href="#tutoriais"><span class="octicon octicon-link"></span></a>Tutoriais</h1>
+
+<p>Os tutoriais podem ser encontrados na pasta tutoriais.</p>
+
+<h1>
+<a name="compilando" class="anchor" href="#compilando"><span class="octicon octicon-link"></span></a>Compilando</h1>
+
+<p>Compile pelo terminal ::</p>
+
+<pre><code>gccx main.c -o main
+</code></pre>
+
+<p>O gccx é o gcc normal mais os parâmetros da biblioteca.</p>
+
+<p>Para compilar pelo Geany::</p>
+
+<pre><code>Ir em:
+Contruir / Definir Comandos de Construção/
+Em Build e em Compile substitua gcc por gccx
+</code></pre>
+
+<p>Para utilizar o Codeblocks ou o QtCreator você precisa descobrir onde fica a biblioteca do
+X11 que você instalou na sua máquina::
+    No terminal digite
+    locate libX11.so | head -1
+    O path que aparecer é o path da lib X11</p>
+
+<p>Para compilar pelo Codeblocks::</p>
+
+<pre><code>Settings, Compiler, Linker
+Adicionar o path para os dois arquivos:
+/usr/local/lib/libkip.a
+O path do libX11.so
+</code></pre>
+
+<p>Para compilar pelo QtCreator::</p>
+
+<pre><code>Crie um projeto Plain C
+Abra o .pro e adicione as sequintes linhas:
+
+LIBS += /usr/local/lib/libkip.a
+INCLUDEPATH += /usr/local/lib/
+
+LIBS += O path do libX11.so
+INCLUDEPATH += A pasta do libX11.so
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Kip - Ultra easy C library for simple games in graphic mode or console mode maintained by <a href="https://github.com/senapk">senapk</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
