@@ -239,7 +239,7 @@ public:
 
 
 
-int main()
+int main_lab()
 {
     k_open(800, 600, "labirinto");
     fmt_block(10);

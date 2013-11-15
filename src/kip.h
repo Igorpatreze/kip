@@ -55,8 +55,9 @@ char k_wait();
 float k_xpos();
 float k_ypos();
 
-/* Verifica se aconteceu algum evento */
-int  k_event_waiting();
+/* Se algum evento tiver acontecido retorna o evento,
+ * se não, retorna 0 */
+char k_peek();
 
 /* Força o acontecimento das ações pendentes de pintura */
 void k_flush();

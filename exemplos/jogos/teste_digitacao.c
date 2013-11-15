@@ -57,9 +57,8 @@ int main_dig(){
         k_write(0,limite_inferior-cont, \
         "################################################################");
         while(1){
-
-            if(k_event_waiting()){
-                c=k_wait();
+            c = k_peek();
+            if(c != 0){
                 if(c == (int) e){
                     cont++;
                     k_clear('K');

@@ -10,12 +10,10 @@ int main_basic_evento()
     int cont = 0;
     while (1)
     {
-        int c;
+        int c = (int)' ';
         k_clear('K');
         // se tiver alguma tecla pressionada, pegue e guarde o caractere em c
-        if (k_event_waiting())
-            c = k_wait();
-
+        c = k_peek();
         // fazendo o contador andar
         fmt_color('g');
         fmt_begin();

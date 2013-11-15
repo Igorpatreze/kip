@@ -120,9 +120,8 @@ void colisao(){
 }
 
 void teclado(){
-    if(k_event_waiting()){
-        int c;
-        c = k_wait();
+    int c = k_peek();
+    if(c){
         switch(c){
             case KEY_RIGHT:
                 if(b.vx < 24)
@@ -189,7 +188,7 @@ void msg_texto(){
     fmt_end();
 }
 
-int main_mola(){
+int main(){
     init();
     msg_texto();
     while(1){

@@ -118,10 +118,7 @@ void k_open( int width, int height, const char *title )
 }
 
 
-
-
-
-int k_event_waiting()
+int __event_waiting()
 {
        XEvent event;
 
@@ -165,6 +162,12 @@ char k_wait()
             return event.xbutton.button;
         }
     }
+}
+
+char k_peek(){
+    if(__event_waiting())
+        return k_wait();
+    return 0;
 }
 
 /* Return the X and Y coordinates of the last event. */

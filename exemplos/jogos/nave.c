@@ -40,11 +40,9 @@ int main_nave()
     while(1)
     {
         k_clear('w');
-        if(k_event_waiting())
+        char c = k_peek();
+        if(c != 0)
         {
-            char c = k_wait();
-            while(k_event_waiting())
-                k_wait();
             if(c == KEY_LEFT)
                 cr.direcao += 30;
             if(c == KEY_RIGHT)
