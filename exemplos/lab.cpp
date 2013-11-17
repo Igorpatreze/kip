@@ -59,18 +59,18 @@ public:
     {
         if(color != ' ')
         {
-            fmt_color(color);
-            k_square(c.x + 0.5, c.y + 0.5, fmt_get()->block -10, 1);
+            k_set_color(color);
+            k_square(c.x + 0.5, c.y + 0.5, k_env_get()->block -10, 1);
             if(sleep!=0)
                 k_sleep(sleep);
         }
-        fmt_color('K');
+        k_set_color('K');
         int x = c.x;
         int y = c.y;
         char cor_linha = 'K';
         char cor_fundo = 'w';
 
-        fmt_color(cor_fundo);
+        k_set_color(cor_fundo);
         if(!wall[LEFT])
             k_line(x,y,x,y+1);
         if(!wall[UP])
@@ -79,7 +79,7 @@ public:
             k_line(x+1,y,x+1,y+1);
         if(!wall[DOWN])
             k_line(x,y+1,x+1,y+1);
-        fmt_color(cor_linha);
+        k_set_color(cor_linha);
         if(wall[LEFT])
             k_line(x,y,x,y+1);
         if(wall[UP])
@@ -137,7 +137,7 @@ public:
         break_wall(c.move(dir), (dir+2)%4);
     }
     void draw(){
-        fmt_color('w');
+        k_set_color('w');
         for (int i = 0; i < nl*nc; i++)
             vec[i].draw('w',0);
     }
@@ -242,7 +242,7 @@ public:
 int main_lab()
 {
     k_open(800, 600, "labirinto");
-    fmt_block(10);
+    k_set_block(10);
     k_clear('w');
     Maze mat(60, 80);
     mat.delay = 0;

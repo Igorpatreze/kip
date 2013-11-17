@@ -61,8 +61,8 @@ ks_kip * __kip(){
 
 ks_kip k_info(){
     ks_kip kip = *(__kip());
-    kip.block = fmt_get()->block;
-    kip.color = fmt_get()->color;
+    kip.block = k_env_get()->block;
+    kip.color = k_env_get()->color;
 
     return kip;
 }
@@ -174,12 +174,12 @@ char k_peek(){
 
 float k_xpos()
 {
-    return (float)saved_xpos/fmt_get()->block;
+    return (float)saved_xpos/k_env_get()->block;
 }
 
 float k_ypos()
 {
-    return (float)saved_ypos/fmt_get()->block;
+    return (float)saved_ypos/k_env_get()->block;
 }
 
 /* Flush all previous output to the window. */
@@ -244,13 +244,13 @@ void k_color_rgb( int r, int g, int b )
     XSetForeground(gfx_display, gfx_gc, color.pixel);
 }
 
-void fmt_color( char color ){
-    if(color == fmt_get()->color)
+void k_set_color( char color ){
+    if(color == k_env_get()->color)
         return;
     ks_color kc = __get_color(color);
     if(kc.r == -1)
         return;
-    fmt_get()->color = color;
+    k_env_get()->color = color;
     k_color_rgb(kc.r,kc.g,kc.b);
 }
 
@@ -302,7 +302,7 @@ void k_clear(char color)
 
 void k_line( float x1, float y1, float x2, float y2 )
 {
-    int block = fmt_get()->block;
+    int block = k_env_get()->block;
     ii_line(x1*block,y1*block, x2*block, y2*block);
 }
 
@@ -315,7 +315,7 @@ void ii_line(int x1, int y1, int x2, int y2 )
 //plota um pixel ou um quadrado fechado
 void k_plot(float x , float y)
 {
-    int block = fmt_get()->block;
+    int block = k_env_get()->block;
     x *= block;
     y *= block;
     int i;
@@ -329,7 +329,7 @@ void k_square( float xc, float yc, int side, int filled)
     int i;
     double x, y;
 
-    int block = fmt_get()->block;
+    int block = k_env_get()->block;
     if(side == 0)
         side = block;
     x = xc * block - side/2;//convertendo para posicoes em pixels
@@ -361,7 +361,7 @@ void k_polig(double xc, double yc, char flag,
 {
     if (sides < 3)
         return;
-    int block = fmt_get()->block;
+    int block = k_env_get()->block;
     xc *= block;
     yc *= block;
 
@@ -467,8 +467,8 @@ void k_mp3_stop(char *path){
 /* ############################################ */
 
 typedef struct{
-    ks_fmt def;
-    ks_fmt temp;
+    ks_env def;
+    ks_env temp;
     int  in_env;
 }ks_fmt_env;
 
@@ -479,14 +479,14 @@ ks_fmt_env * __env()
     if(init)
     {
         init = 0;
-        env.def   = (ks_fmt){0,0,2,2,0,'w',1};
-        env.temp = FMT_DEFAULT;
+        env.def   = FMT_DEFAULT;
+        env.temp  = FMT_DEFAULT;
         env.in_env  = 0;
     }
     return &env;
 }
 
-ks_fmt * fmt_get()
+ks_env * k_env_get()
 {
     ks_fmt_env *p = __env();
     if(p->in_env)
@@ -494,41 +494,46 @@ ks_fmt * fmt_get()
     return &(p->def);
 }
 
-void fmt_begin(){
+//reseta o escopo atual
+void k_env_reset  (){
+    *(k_env_get()) = FMT_DEFAULT;
+}
+
+void k_env_begin(){
     ks_fmt_env *p = __env();
     p->in_env = 1;
     p->temp = p->def;
 }
 
-void fmt_end(){
+void k_env_end(){
     ks_fmt_env *p = __env();
     p->in_env = 0;
-    fmt_color(fmt_get()->color);
+    k_set_color(k_env_get()->color);
 }
-void fmt_block(int size){
-    fmt_get()->block = size;
+void k_set_block(int size){
+    k_env_get()->block = size;
 }
-void fmt_zoom(float xscale, float yscale)
+void k_set_zoom(float xscale, float yscale)
 {
-    fmt_get()->xzoom = xscale;
-    fmt_get()->yzoom = yscale;
+    k_env_get()->xzoom = xscale;
+    k_env_get()->yzoom = yscale;
 }
 
-void fmt_flip(int xflag, int yflag)
+void k_set_flip(int xflag, int yflag)
 {
-    fmt_get()->xflip = xflag;
-    fmt_get()->yflip = yflag;
+    k_env_get()->xflip = xflag;
+    k_env_get()->yflip = yflag;
 }
 
-void fmt_rotate(float angle)
+void k_set_rotate(float angle)
 {
-    fmt_get()->rot = angle;
+    k_env_get()->rot = angle;
 }
 
-void fmt_config    (ks_fmt fmt)
+void k_env_set    (ks_env fmt)
 {
-    *(fmt_get()) = fmt;
-    fmt_color(fmt.color);
+    *(k_env_get()) = fmt;
+    k_set_color(fmt.color);
 }
 
 /* ############################################ */
@@ -573,7 +578,7 @@ void km_coor_rot(double cx, double cy, double *px, double *py, double degrees)
     *py = (ry - cy)*cos(angle) + (rx - cx)*sin(angle) + cy;
 }
 
-ks_point ii_point_fmt(ks_point center, ks_point relative, ks_fmt fmt)
+ks_point ii_point_fmt(ks_point center, ks_point relative, ks_env fmt)
 {
     if(fmt.xflip)
         relative.x *= -1;
@@ -675,7 +680,7 @@ void ii_line_process(ks_point a, ks_point b, ii_plot_fn fn, const void *param){
 #include <stdarg.h>
 
 
-void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
+void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_env fmt)
 {
     if ( head != 0)
     {
@@ -698,7 +703,7 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
                 if(c == ' ')
                     continue;
                 if(c != '#')
-                    fmt_color(c);
+                    k_set_color(c);
                 //2 for para fazer o preenchimento do pixel
                 ks_point desl;
                 ks_point abs;
@@ -721,17 +726,17 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt)
 
 void k_draw(float x, float y, const char *address, int nlin, int ncol)
 {
-    ks_fmt fmt = *(fmt_get('i'));
-    int block = fmt_get()->block;
+    ks_env fmt = *(k_env_get('i'));
+    int block = k_env_get()->block;
     ii_draw(x * block, y * block, address, nlin, ncol, fmt);
 }
 
 
-void ii_vwrite(float x, float y, ks_fmt fmt, const char *str)
+void ii_vwrite(float x, float y, ks_env fmt, const char *str)
 {
     int len = strlen(str);
     int i;
-    int block = fmt_get()->block;
+    int block = k_env_get()->block;
     int letter = 10;
     for(i = 0; i < len; i++)
     {
@@ -755,11 +760,11 @@ void ii_vwrite(float x, float y, ks_fmt fmt, const char *str)
 void k_write(float x, float y, const char *format, ...)
 {
     ii_FORMAT2STR;
-    ks_fmt fmt = *(fmt_get('t'));
+    ks_env fmt = *(k_env_get('t'));
     ii_vwrite(x,y,fmt,str);
 }
 
-void ii_write(float x, float y,ks_fmt fmt, const char *format, ...)
+void ii_write(float x, float y,ks_env fmt, const char *format, ...)
 {
     ii_FORMAT2STR;
     ii_vwrite(x,y,fmt, str);
@@ -826,7 +831,7 @@ void ip_goto( ks_pen *kp, double xdest, double ydest)
 {
     ks_point pactual ={kp->x, kp->y};
     ks_point pdest   ={xdest, ydest};
-    ks_fmt fmt = FMT_DEFAULT;
+    ks_env fmt = FMT_DEFAULT;
     if(kp->is_fixed)
         fmt = kp->fmt;
 
@@ -875,7 +880,7 @@ ks_pen * pen_get(){
         pen = ip_new(0);
     }
 
-    pen.fmt = *(fmt_get());
+    pen.fmt = *(k_env_get());
     return &pen;
 }
 //ks_pen kp_get(){
@@ -919,17 +924,17 @@ void pen_home()
  * ambiente corrente */
 void pen_goto(double xdest, double ydest)
 {
-    pen_get()->fmt = *(fmt_get());
+    pen_get()->fmt = *(k_env_get());
     ip_goto(pen_get(), xdest, ydest);
 }
 void pen_fd(double px)
 {
-    pen_get()->fmt = *(fmt_get());
+    pen_get()->fmt = *(k_env_get());
     ip_fd(pen_get(), px);
 }
 void pen_curve(double xcenter, double ycenter, double angle, int steps)
 {
-    pen_get()->fmt = *(fmt_get());
+    pen_get()->fmt = *(k_env_get());
     ip_arc(pen_get(), xcenter, ycenter, angle, steps);
 }
 /* FIM DOS COMANDOS QUE CHAMAM COMANDOS INTERNOS DE DESENHO */
@@ -1140,40 +1145,40 @@ const char * k_code(int code)
             {"   MmMm   "}};
 
         static const char asc_014[][10]={
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "}};
+            {"   wwwww  "},
+            {"  WwkWwkw "},
+            {"    ww    "},
+            {"  rrrrrr  "},
+            {" r rrrr r "},
+            {" r rrrr ry"},
+            {" y rrrr   "},
+            {"   bb bb  "},
+            {"   bb bb  "},
+            {"  ccc ccc "}};
 
         static const char asc_015[][10]={
             {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "}};
+            {"   yyyy   "},
+            {"  yg gy   "},
+            {"  yrrr y  "},
+            {"    b   y "},
+            {"ccccbccccc"},
+            {"   yby    "},
+            {"  yyyyy   "},
+            {"  yyyyyy  "},
+            {"   w  w   "} };
 
         static const char asc_016[][10]={
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "},
-            {"          "}};
+            {"    kk    "},
+            {"    kk    "},
+            {"    kk    "},
+            {" K  kk  K "},
+            {" K  kk  K "},
+            {"  KgkkgK  "},
+            {"   kkkk   "},
+            {" kkkkkkkk "},
+            {"KKKKKKKKKK"},
+            {"    rr    "}};
 
         static const char asc_017[][10]={
             {"          "},

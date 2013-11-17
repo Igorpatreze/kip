@@ -15,11 +15,13 @@ SOURCES += src/main.c \
     exemplos/jogos/homem_mola.c \
     exemplos/jogos/bicicleta.c \
     exemplos/recursao/fractais.c \
-    exemplos/lab.cpp
+    exemplos/lab.cpp \
+    tkip/tkip.c
 
 HEADERS += \
     src/kip.h \
-    test/kip_test.h
+    test/kip_test.h \
+    tkip/tkip.h
 
 
 LIBS += /usr/lib/libX11.so

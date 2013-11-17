@@ -27,10 +27,13 @@
 #define KEY_DOWN  84
 
 /* CODIGOS */
-#define CODE_HAPPY_FACE        6
-#define CODE_APPLE            12
-#define CODE_HEART            13
-#define CODE_BOMBERMAN        14
+#define CODE_HAPPY_FACE       10
+#define CODE_APPLE            11
+#define CODE_HEART            12
+#define CODE_BOMBERMAN        13
+#define CODE_ROBOT            14
+#define CODE_GIRL             15
+#define CODE_SPACESHIP        16
 
 
 
@@ -88,34 +91,32 @@ typedef struct{
     char color;  //atual cor de risco
     int  block;  //atual tamanho do bloco
 
-} ks_fmt;
+} ks_env;
 
-#define FMT_DEFAULT (ks_fmt) {0, 0, 1, 1, 0, 'w', 1}
+#define FMT_DEFAULT (ks_env) {0, 0, 2, 2, 0, 'w', 20}
 /* funcoes para formatacao */
 
-// Abre o escopo temporário de formatacao
-//   O novo escopo eh iniciado com a copia do escopo default
-void fmt_begin();
-
+// Abre o ambiente == environment - env. temporário de formatacao
+// O novo escopo eh iniciado com a copia do escopo default
+void     k_env_begin();
 //fecha o escopo temporario
-void fmt_end();
+void     k_env_end();
+// Padrao flip x=0, y=0, zoom x=2, y=2, rot = 0,
+// Color 'w', Block 20
+void     k_env_reset   ();//reseta as configuracoes do escopo atual
+void     k_env_set (ks_env fmt);//seta passando uma struct
+ks_env * k_env_get ();//retorna endereco do escopo atual
 
 /* Agrupa pixels em blocos, para funcoes
  * k_write, k_xpos, k_ypos, k_image, k_draw
  * O default eh 1, que funciona como movimentação em pixeis */
-void fmt_block(int size);
-
+void k_set_block(int size);
 /* Muda a cor corrente, opcoes:
  * R, r, G, g, B, b, Y, y, C, c, M, m, W, w, K, k */
-void fmt_color( char color);
-
-//padrao flip x=0, y=0, zoom x=2, y=2, rot = 0, color 'w', block 1
-void fmt_reset  ();//reseta as configuracoes do escopo atual
-void fmt_zoom   (float xscale, float yscale);
-void fmt_flip   (int xflag, int yflag);
-void fmt_rotate (float angle);
-void fmt_config (ks_fmt fmt);
-ks_fmt * fmt_get();//retorna endereco das transformacoes
+void k_set_color( char color);
+void k_set_zoom   (float xscale, float yscale);
+void k_set_flip   (int xflag, int yflag);
+void k_set_rotate (float angle);
 
 /* ############################################ */
 /* ######## FUNCOES DE TEXTO E IMAGENS ######## */
@@ -165,7 +166,7 @@ void k_polig(double xc, double yc, char flag,
 /* # TODOS OS ANGULOS SAO DADOS E RETORNADOS EM GRAUS # */
 
 /* Retorna um numero aleatorio */
-int  km_rand();
+int    km_rand();
 
 /* Funcao para obter o angulo entre dois pontos em graus */
 double km_angle(double ax, double ay, double bx, double by);
@@ -212,7 +213,7 @@ typedef struct{
     double xcenter;
     double ycenter;
     int    is_fixed;
-    ks_fmt fmt;
+    ks_env fmt;
 } ks_pen;
 
 //informacoes
@@ -288,12 +289,12 @@ typedef struct{
  */
 ks_color * ii_rgb_vector();
 //desenha como k_draw, mas recebe a fmt diretamente
-void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_fmt fmt);
+void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_env fmt);
 //desenha como k_write, mas recebe a fmt diretamente
-void ii_write(float x, float y, ks_fmt fmt, const char *format, ...);
+void ii_write(float x, float y, ks_env fmt, const char *format, ...);
 
 //aplica a transformação fmt ao ponto relative dado o centro absoluto
-ks_point ii_point_fmt(ks_point center, ks_point relative, ks_fmt fmt);
+ks_point ii_point_fmt(ks_point center, ks_point relative, ks_env fmt);
 
 //a funcao plota o ponto x e y e recebe parametros adicionais se necessario
 typedef void (*ii_plot_fn) (double x, double y, const void * param);

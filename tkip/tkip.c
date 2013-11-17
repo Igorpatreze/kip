@@ -21,7 +21,7 @@
 struct termios old_attr, new_attr;
 
 
-void k_color(char color)
+void tk_color(char color)
 {
     switch(color)
     {
@@ -76,16 +76,16 @@ void k_color(char color)
     }
 }
 
-const char * k_info_colors(){
+const char * tk_info_colors(){
     static const char *colors = "rgbycmkwRGBYCMKW";
     return colors;
 }
 
-void k_clear(){
+void tk_clear(){
     puts("\033[2J");
 }
 
-void k_write(int x, int y, const char *format, ...)
+void tk_write(int x, int y, const char *format, ...)
 {
     char str[1000];   \
     va_list args;     \
@@ -104,7 +104,7 @@ void k_write(int x, int y, const char *format, ...)
  * Daemonio (Marcos Paulo Ferreira)
  * http://daemoniolabs.wordpress.com
  */
-int k_peek(void) {
+int tk_peek(void) {
     int c ;
 
     /* Obtém as configurações atuais. */
@@ -135,7 +135,7 @@ int k_peek(void) {
  * Daemonio (Marcos Paulo Ferreira)
  * http://daemoniolabs.wordpress.com
  */
-int k_wait(void) {
+int tk_wait(void) {
     int c ;
     /* Obtém as configurações atuais. */
     tcgetattr(0,&old_attr);
@@ -163,7 +163,7 @@ int k_wait(void) {
     return c ;
 }
 
-void k_sleep(int msec)
+void tk_sleep(int msec)
 {
     puts(" ");
     struct timespec interval;
@@ -174,7 +174,7 @@ void k_sleep(int msec)
     //usleep(1000*msec);
 }
 
-int km_rand()
+int tkm_rand()
 {
     static int init = 1;
     if(init) {
@@ -184,13 +184,13 @@ int km_rand()
     return rand();
 }
 
-void k_mp3_play(char *path){
+void tk_mp3_play(char *path){
     char c[500];
     sprintf(c,"mpg123 %s 2>/dev/null 1>/dev/null&",path);
     system(c);
 }
 
-void k_mp3_stop(char *path){
+void tk_mp3_stop(char *path){
     char c[500];
     sprintf(c,"ps aux  | grep \"mpg123 %s\" |head -1|  awk '{ print $2; }' | xargs kill -9 2>/dev/null 1>/dev/null&",path);
     system(c);

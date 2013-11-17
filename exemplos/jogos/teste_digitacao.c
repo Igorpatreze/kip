@@ -25,24 +25,24 @@ void atualizar_pos(){
 }
 
 void print_tecla(char e){
-    fmt_begin();
-        fmt_zoom(4,4);
+    k_env_begin();
+        k_set_zoom(4,4);
         //kf_flip(xflip, 0);
-        fmt_rotate(rotacao);
-        fmt_color('K');
+        k_set_rotate(rotacao);
+        k_set_color('K');
         k_write(xtecla,ytecla, "%c",e);
-        fmt_color('g');
+        k_set_color('g');
         k_write(xtecla,ytecla+0.2, "%c",e);
-    fmt_end();
+    k_env_end();
 }
 
 int main_dig(){
 
     k_open(1000,750,"Exemplo 2");
-    fmt_block(20);
+    k_set_block(20);
     putchar(5==5 - '1');
     puts("");
-    fmt_color('g');
+    k_set_color('g');
     char e =(char) 0;//inicializando com quaisquer valores que sejam diferentes
     int  c =       1;
     int cont = 0;
@@ -73,9 +73,9 @@ int main_dig(){
             print_tecla(e);
 
             k_write(0,0,"Pontos faltantes %d :", MAX -cont);
-            fmt_color('k');
+            k_set_color('k');
             k_write(49,36,"%c",e);
-            fmt_color('g');
+            k_set_color('g');
             k_sleep(30 - cont/1.5);
         }
     }

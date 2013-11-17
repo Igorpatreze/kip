@@ -5,7 +5,7 @@
 void tree(int tam){
     int dec = 20;
     if (tam > 5){
-        fmt_color('B');
+        k_set_color('B');
         pen_fd(tam);
         pen_rt(20);
         tree(tam-dec);
@@ -14,7 +14,7 @@ void tree(int tam){
         tree(tam-dec);
 
         pen_rt(20);
-        fmt_color('K');
+        k_set_color('K');
         pen_bk(tam);
     }
 }
@@ -88,7 +88,7 @@ void recpol (double ang, int tam, int qtd){
     pen_fd(tam);
     pen_lt(ang);
     recpol(ang, tam, qtd-1);
-    fmt_color('r');
+    k_set_color('r');
     pen_rt(ang);
     pen_bk(tam);
 }
@@ -122,15 +122,15 @@ void matriz(int x, int y){
 void matriz2(int x, int y)
 {
     k_clear('W');
-    fmt_color('k');
+    k_set_color('k');
     int i, j;
     for(i = 0; i < y; i++)
         for(j = 0; j < x; j++)
         {
-            fmt_color('w');
+            k_set_color('w');
             k_plot(j,i);
-            fmt_color('r');
-            k_square(j+0.1,i+0.1,fmt_get()->block *0.8, 1);
+            k_set_color('r');
+            k_square(j+0.1,i+0.1,k_env_get()->block *0.8, 1);
         }
 }
 void kip_test_sol(){
@@ -139,7 +139,7 @@ void kip_test_sol(){
     int i;
     for (i=0;i<4000;i+=20){
         k_clear('K');
-        fmt_rotate(i);
+        k_set_rotate(i);
         pen_fix(400,300);
         pen_up();
         pen_fd(50+i/20);
@@ -152,29 +152,29 @@ void kip_test_sol(){
 
 void kip_test_polig(){
     k_open(800, 600, "oi");
-    fmt_block(1);
+    k_set_block(1);
     k_polig(200,200,'r', 100, 4, 1);
-    fmt_color('r');
+    k_set_color('r');
     k_polig(200,200,'s', 100, 4, 1);
     k_wait();
 }
 
 void kip_test_cores(){
         k_open(1000,500,"Primeiro teste");
-        fmt_block(50);
+        k_set_block(50);
         k_clear('w');//pinta o fundo de branco
-        fmt_zoom(5,5);
-        fmt_rotate(0);
+        k_set_zoom(5,5);
+        k_set_rotate(0);
         const char *cores = k_info().colors;
         int i;
         int t = strlen(cores);
         for( i = 0; i < t; i++)
         {
-            fmt_color(cores[i]);
+            k_set_color(cores[i]);
             k_plot(i, 2);
 
-            fmt_color('K');
-            fmt_rotate(0);
+            k_set_color('K');
+            k_set_rotate(0);
             k_write(i, 1, "%c", cores[i]);
         }
 
@@ -183,7 +183,7 @@ void kip_test_cores(){
 void kip_teste1()
 {
     k_open(800,600,"oi");
-    fmt_block(40);
+    k_set_block(40);
     matriz2(15,15);
     k_wait();
 }
