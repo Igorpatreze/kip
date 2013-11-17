@@ -1,3 +1,9 @@
+/* 
+	Autoria:
+            Natasha Silveira
+*/
+
+
 #include <kip.h>
 #include <stdio.h>
 
