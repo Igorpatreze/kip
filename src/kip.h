@@ -5,8 +5,11 @@
 
 #ifndef KIP_H
 #define KIP_H
-
 #include <stdarg.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* ############################################ */
 /* ######## DEFINES                   ######### */
@@ -79,12 +82,13 @@
         //utiliza a formatacao das funcoes kf_zoom, kf_flip kf_rot
         void k_write(float x, float y, const char *format, ...);
 
-        //retorna a imagem 10x10 de uma letra ou simbolo dado o codigo asc
-        const char *k_code(int code);
 
 /* ############################################ */
 /* ######## AUXILIARES                 ######## */
 /* ############################################ */
+
+        //retorna a imagem 10x10 de uma letra ou simbolo dado o codigo asc
+        const char *k_code(int code);
 
         /* Faz o programa dormir, em milessegundos */
         void k_sleep(int msec);
@@ -98,6 +102,8 @@
         /* Para um audio mp3 dado o path */
         void k_mp3_stop(char *path);
 
+        /* Para adicionar uma cor */
+        void k_add_color(char color, int r, int g, int b);
 
 /* ############################################ */
 /* ######## FUNCOES DE FORMATACAO     ######### */
@@ -117,29 +123,31 @@
 
         #define FMT_DEFAULT (ks_env) {0, 0, 2, 2, 0, 'w', 20}
 
+        //Todas as funcoes abaixo podem ser tratadas
+        //como funcoes de escopo
 
         /* Agrupa pixels em blocos, para funcoes
          * k_write, k_xpos, k_ypos, k_image, k_draw
          * O default eh 20 */
-        void k_set_block(int size);
+        void k_block(int size);
         /* Muda a cor corrente, opcoes:
          * R, r, G, g, B, b, Y, y, C, c, M, m, W, w, K, k */
-        void k_set_color( char color);
-        void k_set_zoom   (float xscale, float yscale);
-        void k_set_flip   (int xflag, int yflag);
-        void k_set_rotate (float angle);
+        void k_color( char color);
+        void k_zoom   (float xscale, float yscale);
+        void k_flip   (int xflag, int yflag);
+        void k_rotate (float angle);
 
 
         // Abre o ambiente == environment - env. temporário de formatacao
         // O novo escopo eh iniciado com a copia do escopo default
-        void     k_env_begin();
+        void     kenv_begin();
         //fecha o escopo temporario
-        void     k_env_end();
+        void     kenv_end();
         // Padrao flip x=0, y=0, zoom x=2, y=2, rot = 0,
         // Color 'w', Block 20
-        void     k_env_reset   ();//reseta as configuracoes do escopo atual
-        void     k_env_set (ks_env fmt);//seta passando uma struct
-        ks_env * k_env_get ();//retorna endereco do escopo atual
+        void     kenv_reset   ();//reseta as configuracoes do escopo atual
+        void     kenv_set (ks_env fmt);//seta passando uma struct
+        ks_env * kenv_get ();//retorna endereco do escopo atual
 
 
 /* ############################################ */
@@ -158,7 +166,7 @@
     void k_square(float xc, float yc, int side, int filled);
 
     /* Desenha um poligono dado o centro, o numero de lados,
-     * um bool se deve preencher ou nao.
+     * e um bool se deve preencher ou nao.
      * Se flag = 's', value deve conter o valor do lado
      * Se flag = 'r', value deve conter o valor do raio*/
     void k_polig(double xc, double yc, char flag,
@@ -175,19 +183,19 @@
     /* # TODOS OS ANGULOS SAO DADOS E RETORNADOS EM GRAUS # */
 
     /* Retorna um numero aleatorio */
-    int    km_rand();
+    int    k_rand();
 
     /* Funcao para obter o angulo entre dois pontos em graus */
-    double km_angle(double ax, double ay, double bx, double by);
+    double k_calc_angle(double ax, double ay, double bx, double by);
 
     /* Distancia entre dois pontos */
-    double km_dist(double ax, double ay, double bx, double by);
+    double k_calc_distance(double ax, double ay, double bx, double by);
 
     /* Funcao para rotacionar um ponto em relacao a um centro
      * cx e cy coordenadas do centro,
      * px e py endereco do ponto a ser rotacionado
      * O resultado da rotação é lançado em px py. */
-    void km_coor_rot(double cx, double cy,
+    void k_rotate_coor(double cx, double cy,
              double *px, double *py, double degrees);
 
 
@@ -275,56 +283,12 @@
     //desabilidata as transformações
     void pen_unfix();
 
-/* ############################################ */
-/* ##########    FUNCOES INTERNAS   ########### */
-/* ############################################ */
 
-    /*desenha uma linha entre os pixels (x1,y1) e (x2,y2) */
-    void ii_line(int x1, int y1, int x2, int y2);
 
-    typedef struct{
-        double x, y;
-    } ks_point;
 
-    typedef struct{
-        int r, g, b;
-    }ks_color;
 
-    /* Retorna o vetor interno que guarda as cores
-     * adicionar uma nova cor ao sistema pode ser
-     * feito usando
-     * ks_color *vec = ii_rgb_vector();
-     * vec[(int)'a'] = ks_color(144, 123, 233);
-     *
-     * Depois disso, a cor 'a' ja esta disponivel
-     *
-     */
-    ks_color * ii_rgb_vector();
-    //desenha como k_draw, mas recebe a fmt diretamente
-    void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_env fmt);
-    //desenha como k_write, mas recebe a fmt diretamente
-    void ii_write(float x, float y, ks_env fmt, const char *format, ...);
-
-    //aplica a transformação fmt ao ponto relative dado o centro absoluto
-    ks_point ii_point_fmt(ks_point center, ks_point relative, ks_env fmt);
-
-    //a funcao plota o ponto x e y e recebe parametros adicionais se necessario
-    typedef void (*ii_plot_fn) (double x, double y, const void * param);
-    //processa uma linha entre a e b usando a funcao var_fn e os parametros
-    void  ii_line_process(ks_point a, ks_point b, ii_plot_fn fn, const void *param);
-
-    //retorna uma struct com os valores default para caneta
-    ks_pen ip_new(int delay);
-    //fixa para transformacoes
-    void ip_fix  (ks_pen *kp, double x, double y);
-    //leva a caneta para para posicao
-    void ip_goto (ks_pen *kp, double xdest, double ydest);
-    //leva a caneta kp pra frente
-    void ip_fd   (ks_pen *kp, double px);
-    //desenha um poligono dado o centro(xc,yc) o angulo (360 eh o angulo todo)
-    //o numero de passos(step 4 faz um quadrado se angulo = 360)
-    //kp da a posicao inicial da caneta
-    void ip_arc(ks_pen *kp, double xc, double yc, double angle, int steps);
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif // HW_H

@@ -23,6 +23,57 @@ Adaptações por David Sena. sena.ufc@gmail.com
 #include "kip.h"
 
 /* ############################################ */
+/* ##########    FUNCOES INTERNAS   ########### */
+/* ############################################ */
+
+    /*desenha uma linha entre os pixels (x1,y1) e (x2,y2) */
+    void ii_line(int x1, int y1, int x2, int y2);
+
+    typedef struct{
+        double x, y;
+    } ks_point;
+
+    typedef struct{
+        int r, g, b;
+    }ks_color;
+
+    /* Retorna o vetor interno que guarda as cores
+     * adicionar uma nova cor ao sistema pode ser
+     * feito usando
+     * ks_color *vec = ii_rgb_vector();
+     * vec[(int)'a'] = ks_color(144, 123, 233);
+     *
+     * Depois disso, a cor 'a' ja esta disponivel
+     *
+     */
+    ks_color * ii_rgb_vector();
+    //desenha como k_draw, mas recebe a fmt diretamente
+    void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_env fmt);
+    //desenha como k_write, mas recebe a fmt diretamente
+    void ii_write(float x, float y, ks_env fmt, const char *format, ...);
+
+    //aplica a transformação fmt ao ponto relative dado o centro absoluto
+    ks_point ii_point_fmt(ks_point center, ks_point relative, ks_env fmt);
+
+    //a funcao plota o ponto x e y e recebe parametros adicionais se necessario
+    typedef void (*ii_plot_fn) (double x, double y, const void * param);
+    //processa uma linha entre a e b usando a funcao var_fn e os parametros
+    void  ii_line_process(ks_point a, ks_point b, ii_plot_fn fn, const void *param);
+
+    //retorna uma struct com os valores default para caneta
+    ks_pen ip_new(int delay);
+    //fixa para transformacoes
+    void ip_fix  (ks_pen *kp, double x, double y);
+    //leva a caneta para para posicao
+    void ip_goto (ks_pen *kp, double xdest, double ydest);
+    //leva a caneta kp pra frente
+    void ip_fd   (ks_pen *kp, double px);
+    //desenha um poligono dado o centro(xc,yc) o angulo (360 eh o angulo todo)
+    //o numero de passos(step 4 faz um quadrado se angulo = 360)
+    //kp da a posicao inicial da caneta
+    void ip_arc(ks_pen *kp, double xc, double yc, double angle, int steps);
+
+/* ############################################ */
 /* ######## VARIAVEIS GLOBAIS DO SISTEMA ###### */
 /* ############################################ */
 /*
@@ -61,8 +112,8 @@ ks_kip * __kip(){
 
 ks_kip k_info(){
     ks_kip kip = *(__kip());
-    kip.block = k_env_get()->block;
-    kip.color = k_env_get()->color;
+    kip.block = kenv_get()->block;
+    kip.color = kenv_get()->color;
 
     return kip;
 }
@@ -174,12 +225,12 @@ char k_peek(){
 
 float k_xpos()
 {
-    return (float)saved_xpos/k_env_get()->block;
+    return (float)saved_xpos/kenv_get()->block;
 }
 
 float k_ypos()
 {
-    return (float)saved_ypos/k_env_get()->block;
+    return (float)saved_ypos/kenv_get()->block;
 }
 
 /* Flush all previous output to the window. */
@@ -230,6 +281,10 @@ ks_color __get_color(char color){
     return vec[(int)color];
 }
 
+void k_add_color(char color, int r, int g, int b){
+    ks_color * vec = ii_rgb_vector();
+    vec[(int)color] = (ks_color) {r, g, b};
+}
 
 /* Change the current drawing color. */
 void k_color_rgb( int r, int g, int b )
@@ -244,13 +299,13 @@ void k_color_rgb( int r, int g, int b )
     XSetForeground(gfx_display, gfx_gc, color.pixel);
 }
 
-void k_set_color( char color ){
-    if(color == k_env_get()->color)
+void k_color( char color ){
+    if(color == kenv_get()->color)
         return;
     ks_color kc = __get_color(color);
     if(kc.r == -1)
         return;
-    k_env_get()->color = color;
+    kenv_get()->color = color;
     k_color_rgb(kc.r,kc.g,kc.b);
 }
 
@@ -302,7 +357,7 @@ void k_clear(char color)
 
 void k_line( float x1, float y1, float x2, float y2 )
 {
-    int block = k_env_get()->block;
+    int block = kenv_get()->block;
     ii_line(x1*block,y1*block, x2*block, y2*block);
 }
 
@@ -315,7 +370,7 @@ void ii_line(int x1, int y1, int x2, int y2 )
 //plota um pixel ou um quadrado fechado
 void k_plot(float x , float y)
 {
-    int block = k_env_get()->block;
+    int block = kenv_get()->block;
     x *= block;
     y *= block;
     int i;
@@ -329,7 +384,7 @@ void k_square( float xc, float yc, int side, int filled)
     int i;
     double x, y;
 
-    int block = k_env_get()->block;
+    int block = kenv_get()->block;
     if(side == 0)
         side = block;
     x = xc * block - side/2;//convertendo para posicoes em pixels
@@ -361,7 +416,7 @@ void k_polig(double xc, double yc, char flag,
 {
     if (sides < 3)
         return;
-    int block = k_env_get()->block;
+    int block = kenv_get()->block;
     xc *= block;
     yc *= block;
 
@@ -444,7 +499,7 @@ void k_sleep(int msec)
 
 
 
-int km_rand()
+int k_rand()
 {
     return rand();
 }
@@ -486,7 +541,7 @@ ks_fmt_env * __env()
     return &env;
 }
 
-ks_env * k_env_get()
+ks_env * kenv_get()
 {
     ks_fmt_env *p = __env();
     if(p->in_env)
@@ -495,45 +550,45 @@ ks_env * k_env_get()
 }
 
 //reseta o escopo atual
-void k_env_reset  (){
-    *(k_env_get()) = FMT_DEFAULT;
+void kenv_reset  (){
+    *(kenv_get()) = FMT_DEFAULT;
 }
 
-void k_env_begin(){
+void kenv_begin(){
     ks_fmt_env *p = __env();
     p->in_env = 1;
     p->temp = p->def;
 }
 
-void k_env_end(){
+void kenv_end(){
     ks_fmt_env *p = __env();
     p->in_env = 0;
-    k_set_color(k_env_get()->color);
+    k_color(kenv_get()->color);
 }
-void k_set_block(int size){
-    k_env_get()->block = size;
+void k_block(int size){
+    kenv_get()->block = size;
 }
-void k_set_zoom(float xscale, float yscale)
+void k_zoom(float xscale, float yscale)
 {
-    k_env_get()->xzoom = xscale;
-    k_env_get()->yzoom = yscale;
+    kenv_get()->xzoom = xscale;
+    kenv_get()->yzoom = yscale;
 }
 
-void k_set_flip(int xflag, int yflag)
+void k_flip(int xflag, int yflag)
 {
-    k_env_get()->xflip = xflag;
-    k_env_get()->yflip = yflag;
+    kenv_get()->xflip = xflag;
+    kenv_get()->yflip = yflag;
 }
 
-void k_set_rotate(float angle)
+void k_rotate(float angle)
 {
-    k_env_get()->rot = angle;
+    kenv_get()->rot = angle;
 }
 
-void k_env_set    (ks_env fmt)
+void kenv_set    (ks_env fmt)
 {
-    *(k_env_get()) = fmt;
-    k_set_color(fmt.color);
+    *(kenv_get()) = fmt;
+    k_color(fmt.color);
 }
 
 /* ############################################ */
@@ -558,18 +613,18 @@ void k_env_set    (ks_env fmt)
 //}
 
 /* retorna distancia entre dois pontos */
-double km_dist(double ax, double ay, double bx, double by)
+double k_calc_distance(double ax, double ay, double bx, double by)
 {
     return sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
 }
 
 /* Return the angle in degrees from a to b */
-double km_angle(double ax, double ay, double bx, double by)
+double k_calc_angle(double ax, double ay, double bx, double by)
 {
     return km_rad2deg(atan((by - ay)/(ax - bx))+km_PI);
 }
 
-void km_coor_rot(double cx, double cy, double *px, double *py, double degrees)
+void k_rotate_coor(double cx, double cy, double *px, double *py, double degrees)
 {
     double rx = *px;
     double ry = *py;
@@ -598,7 +653,7 @@ ks_point ii_point_fmt(ks_point center, ks_point relative, ks_env fmt)
     relative.y += center.y;
     //rotate
     //relative = ki_point_rotate(center, relative, fmt.rot);
-    km_coor_rot(center.x, center.y, &relative.x, &relative.y, fmt.rot);
+    k_rotate_coor(center.x, center.y, &relative.x, &relative.y, fmt.rot);
     return relative;
 }
 
@@ -703,7 +758,7 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_env fmt)
                 if(c == ' ')
                     continue;
                 if(c != '#')
-                    k_set_color(c);
+                    k_color(c);
                 //2 for para fazer o preenchimento do pixel
                 ks_point desl;
                 ks_point abs;
@@ -726,8 +781,8 @@ void ii_draw(int px, int py, const char * head, int nlin, int ncol, ks_env fmt)
 
 void k_draw(float x, float y, const char *address, int nlin, int ncol)
 {
-    ks_env fmt = *(k_env_get('i'));
-    int block = k_env_get()->block;
+    ks_env fmt = *(kenv_get('i'));
+    int block = kenv_get()->block;
     ii_draw(x * block, y * block, address, nlin, ncol, fmt);
 }
 
@@ -736,7 +791,7 @@ void ii_vwrite(float x, float y, ks_env fmt, const char *str)
 {
     int len = strlen(str);
     int i;
-    int block = k_env_get()->block;
+    int block = kenv_get()->block;
     int letter = 10;
     for(i = 0; i < len; i++)
     {
@@ -760,7 +815,7 @@ void ii_vwrite(float x, float y, ks_env fmt, const char *str)
 void k_write(float x, float y, const char *format, ...)
 {
     ii_FORMAT2STR;
-    ks_env fmt = *(k_env_get('t'));
+    ks_env fmt = *(kenv_get('t'));
     ii_vwrite(x,y,fmt,str);
 }
 
@@ -804,7 +859,7 @@ void __plot_delay_wrapper( double x, double y, const void *param)
         k_sleep(delay);
     else
     {
-        int r = km_rand()%100;
+        int r = k_rand()%100;
         if(r < delay*100)
             k_sleep(1);
     }
@@ -864,7 +919,7 @@ void ip_arc(ks_pen *kp, double xc, double yc, double angle, int steps)
     for(i=0; i<steps; i ++)
     {
         double destx = xorigin, desty = yorigin;
-        km_coor_rot(xc, yc, &destx, &desty, (i+1)*(angle/steps));
+        k_rotate_coor(xc, yc, &destx, &desty, (i+1)*(angle/steps));
         ip_goto(kp, destx, desty);
     }
 }
@@ -880,7 +935,7 @@ ks_pen * pen_get(){
         pen = ip_new(0);
     }
 
-    pen.fmt = *(k_env_get());
+    pen.fmt = *(kenv_get());
     return &pen;
 }
 //ks_pen kp_get(){
@@ -924,17 +979,17 @@ void pen_home()
  * ambiente corrente */
 void pen_goto(double xdest, double ydest)
 {
-    pen_get()->fmt = *(k_env_get());
+    pen_get()->fmt = *(kenv_get());
     ip_goto(pen_get(), xdest, ydest);
 }
 void pen_fd(double px)
 {
-    pen_get()->fmt = *(k_env_get());
+    pen_get()->fmt = *(kenv_get());
     ip_fd(pen_get(), px);
 }
 void pen_curve(double xcenter, double ycenter, double angle, int steps)
 {
-    pen_get()->fmt = *(k_env_get());
+    pen_get()->fmt = *(kenv_get());
     ip_arc(pen_get(), xcenter, ycenter, angle, steps);
 }
 /* FIM DOS COMANDOS QUE CHAMAM COMANDOS INTERNOS DE DESENHO */

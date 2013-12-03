@@ -10,7 +10,7 @@ void bicicleta(bike *b)
     int base = base = 10;
     int lado = 40;
 
-    pen_fix(b->x*k_env_get()->block, b->y*k_env_get()->block);
+    pen_fix(b->x*kenv_get()->block, b->y*kenv_get()->block);
     pen_up();
     pen_goto(-lado, base);
     pen_fd(raio);

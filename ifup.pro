@@ -24,7 +24,9 @@ HEADERS += \
     tkip/tkip.h
 
 
-LIBS += /usr/lib/libX11.so
+#LIBS += /usr/lib/x86_64-linux-gnu/libX11.so
+LIBS += -L/usr/lib -lX11
+#INCLUDEPATH += /usr/lib/x86_64-linux-gnu/
 INCLUDEPATH += /usr/lib/
 
-OTHER_FILES +=
+#OTHER_FILES +=

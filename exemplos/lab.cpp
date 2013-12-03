@@ -1,6 +1,4 @@
-extern "C"{
 #include "../src/kip.h"
-}
 #include <vector>
 #include <stack>
 #include <iostream>
@@ -59,18 +57,18 @@ public:
     {
         if(color != ' ')
         {
-            k_set_color(color);
-            k_square(c.x + 0.5, c.y + 0.5, k_env_get()->block -10, 1);
+            k_color(color);
+            k_square(c.x + 0.5, c.y + 0.5, kenv_get()->block -10, 1);
             if(sleep!=0)
                 k_sleep(sleep);
         }
-        k_set_color('K');
+        k_color('K');
         int x = c.x;
         int y = c.y;
         char cor_linha = 'K';
         char cor_fundo = 'w';
 
-        k_set_color(cor_fundo);
+        k_color(cor_fundo);
         if(!wall[LEFT])
             k_line(x,y,x,y+1);
         if(!wall[UP])
@@ -79,7 +77,7 @@ public:
             k_line(x+1,y,x+1,y+1);
         if(!wall[DOWN])
             k_line(x,y+1,x+1,y+1);
-        k_set_color(cor_linha);
+        k_color(cor_linha);
         if(wall[LEFT])
             k_line(x,y,x,y+1);
         if(wall[UP])
@@ -137,7 +135,7 @@ public:
         break_wall(c.move(dir), (dir+2)%4);
     }
     void draw(){
-        k_set_color('w');
+        k_color('w');
         for (int i = 0; i < nl*nc; i++)
             vec[i].draw('w',0);
     }
@@ -157,7 +155,7 @@ public:
         if(vizinhos.empty())
             return -1;
 
-        return vizinhos[km_rand()%vizinhos.size()];
+        return vizinhos[k_rand()%vizinhos.size()];
     }
 
 
@@ -197,7 +195,7 @@ public:
             return -1;
 
         }
-        return vizinhos[km_rand()%vizinhos.size()];
+        return vizinhos[k_rand()%vizinhos.size()];
     }
 
     void path(Cor b, Cor e)
@@ -242,7 +240,7 @@ public:
 int main_lab()
 {
     k_open(800, 600, "labirinto");
-    k_set_block(10);
+    k_block(10);
     k_clear('w');
     Maze mat(60, 80);
     mat.delay = 0;

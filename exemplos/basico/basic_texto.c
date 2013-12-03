@@ -7,33 +7,33 @@ int main_texto()
 {
 
     k_open(1600, 1200, "Primeiro teste ");
-    k_set_block(20);
+    k_block(20);
     k_clear('w');               // pinta o background com a nova cor
 
-    k_set_color('K');
-    k_set_zoom(3, 4);
+    k_color('K');
+    k_zoom(3, 4);
 
     k_write(0, 1, "Caracteres imprimiveis\n");
 
 
 
-    k_set_zoom(2, 3);
-    k_set_color('b');
+    k_zoom(2, 3);
+    k_color('b');
     k_write(0, 4, "Letras e Numeros");
 
-    k_set_zoom(2, 2);
-    k_set_color('K');
+    k_zoom(2, 2);
+    k_color('K');
 
     k_write(0, 5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     k_write(0, 6, "abcdefghijklmnopqrstuvwxyz");
     k_write(0, 7, "0123456789\n");
 
-    k_set_color('b');
+    k_color('b');
 
-    k_set_zoom(2, 4);
+    k_zoom(2, 4);
 
-    k_set_color('b');
-    k_set_zoom(2, 2);
+    k_color('b');
+    k_zoom(2, 2);
 
     int i;
     for (i = 33; i < 80; i++)
@@ -45,15 +45,15 @@ int main_texto()
         k_write(i - 81, 11, "%c", i);
     }
 
-    k_set_color('b');
-    k_set_zoom(4, 4);
+    k_color('b');
+    k_zoom(4, 4);
     k_write(0, 12, "Muito Grande");
 
-    k_set_zoom(3, 3);
+    k_zoom(3, 3);
     k_write(0, 14, "Grande");
-    k_set_zoom(2, 2);
+    k_zoom(2, 2);
     k_write(0, 16, "Medio");
-    k_set_zoom(1, 1);
+    k_zoom(1, 1);
     k_write(0, 17, "Pequeno");
 
     k_wait();

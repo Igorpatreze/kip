@@ -12,11 +12,11 @@ float rotacao;
 int game_over = 0;
 
 char gerar_tecla(){
-    char e = km_rand()%26+'a';
-    xtecla = (km_rand()%25 +2);
+    char e = k_rand()%26+'a';
+    xtecla = (k_rand()%25 +2);
     ytecla = 0;
-    rotacao = km_rand()%360;
-    xflip  = km_rand()%2;
+    rotacao = k_rand()%360;
+    xflip  = k_rand()%2;
     return e;
 }
 
@@ -25,24 +25,24 @@ void atualizar_pos(){
 }
 
 void print_tecla(char e){
-    k_env_begin();
-        k_set_zoom(4,4);
+    kenv_begin();
+        k_zoom(4,4);
         //kf_flip(xflip, 0);
-        k_set_rotate(rotacao);
-        k_set_color('K');
+        k_rotate(rotacao);
+        k_color('K');
         k_write(xtecla,ytecla, "%c",e);
-        k_set_color('g');
+        k_color('g');
         k_write(xtecla,ytecla+0.2, "%c",e);
-    k_env_end();
+    kenv_end();
 }
 
 int main_dig(){
 
     k_open(1000,750,"Exemplo 2");
-    k_set_block(20);
+    k_block(20);
     putchar(5==5 - '1');
     puts("");
-    k_set_color('g');
+    k_color('g');
     char e =(char) 0;//inicializando com quaisquer valores que sejam diferentes
     int  c =       1;
     int cont = 0;
@@ -73,9 +73,9 @@ int main_dig(){
             print_tecla(e);
 
             k_write(0,0,"Pontos faltantes %d :", MAX -cont);
-            k_set_color('k');
+            k_color('k');
             k_write(49,36,"%c",e);
-            k_set_color('g');
+            k_color('g');
             k_sleep(30 - cont/1.5);
         }
     }

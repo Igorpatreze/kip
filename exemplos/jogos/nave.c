@@ -20,11 +20,11 @@ char nave[][10]={
 void nave_draw(float x, float y, float rotate)
 {
     char *vet = &(nave[0][0]);
-    k_env_begin();
-        k_set_zoom(4,4);
-        k_set_rotate(rotate - 90);
+    kenv_begin();
+        k_zoom(4,4);
+        k_rotate(rotate - 90);
         k_draw(x, y, vet, 10,10);
-    k_env_end();
+    kenv_end();
 }
 #define NBALAS 500
 
@@ -34,8 +34,8 @@ int main_nave()
     Nave balas[NBALAS];
     int  bind = -1;
     k_open(1000, 700, "oi");
-    k_set_block(1);
-    k_set_zoom(4,4);
+    k_block(1);
+    k_zoom(4,4);
 
     while(1)
     {

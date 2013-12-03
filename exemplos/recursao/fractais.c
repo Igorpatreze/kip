@@ -7,7 +7,7 @@ void rtri(int nivel, double x, double y, double r)
 
     const char * cores = k_info().colors;
 
-    k_set_color(cores[nivel]);
+    k_color(cores[nivel]);
     k_polig(x,y,'s',r,3,0);
     k_sleep(1);
     double a = r/4;
@@ -25,7 +25,7 @@ void frac_square(int step, int x, int y, int side)
     if(step > 8)
         return;
 
-    k_set_color(cores[step+3]);
+    k_color(cores[step+3]);
     k_square(x,y,side,0);
 
     frac_square(step +1, x-side/2, y-side/2, side/2.3);
