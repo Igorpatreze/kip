@@ -28,10 +28,13 @@ void nave_draw(float x, float y, float rotate)
 }
 #define NBALAS 500
 
-int main_nave()
+int main()
 {
     Nave cr = {100, 100, 0, 5, 5};
     Nave balas[NBALAS];
+    #include <list>
+    list <Nave> balas;
+
     int  bind = -1;
     k_open(1000, 700, "oi");
     k_block(1);
@@ -50,8 +53,8 @@ int main_nave()
             if(c == KEY_UP)
             {
                 float P = 5;
-                cr.vx += P*cos(km_deg2rad(cr.direcao));
-                cr.vy -= P*sin(km_deg2rad(cr.direcao));
+                cr.vx += P*cos(k_deg2rad(cr.direcao));
+                cr.vy -= P*sin(k_deg2rad(cr.direcao));
             }
             if(c == ' ')
             {
@@ -61,13 +64,14 @@ int main_nave()
                     balas[bind].x = cr.x+10;
                     balas[bind].y = cr.y+10;
                     int vb = 15;
-                    balas[bind].vx = vb*cos(km_deg2rad(cr.direcao));
-                    balas[bind].vy = -vb*sin(km_deg2rad(cr.direcao));
+                    balas[bind].vx = vb*cos(k_deg2rad(cr.direcao));
+                    balas[bind].vy = -vb*sin(k_deg2rad(cr.direcao));
                 }
             }
         }
         cr.x += cr.vx;
         cr.y += cr.vy;
+
 
 
         int i;
@@ -77,7 +81,9 @@ int main_nave()
             balas[i].x += balas[i].vx;
             balas[i].y += balas[i].vy;
             k_write(balas[i].x, balas[i].y, "*");
+
         }
+
         nave_draw(cr.x,cr.y,cr.direcao);
         k_sleep(50);
     }

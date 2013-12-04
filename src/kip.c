@@ -426,12 +426,12 @@ void k_polig(double xc, double yc, char flag,
     if(flag == 'r')
     {
         radius = value;
-        side    = fabs(2 * radius*cos(km_deg2rad(int_ang/2)));
+        side    = fabs(2 * radius*cos(k_deg2rad(int_ang/2)));
     }
     if(flag == 's')
     {
         side = value;
-        radius    = fabs(side/(2*cos(km_deg2rad(int_ang/2))));
+        radius    = fabs(side/(2*cos(k_deg2rad(int_ang/2))));
     }
 
     ks_pen kp = ip_new(0);
@@ -621,14 +621,14 @@ double k_calc_distance(double ax, double ay, double bx, double by)
 /* Return the angle in degrees from a to b */
 double k_calc_angle(double ax, double ay, double bx, double by)
 {
-    return km_rad2deg(atan((by - ay)/(ax - bx))+km_PI);
+    return k_rad2deg(atan((by - ay)/(ax - bx))+k_PI);
 }
 
 void k_rotate_coor(double cx, double cy, double *px, double *py, double degrees)
 {
     double rx = *px;
     double ry = *py;
-    double angle = (-1) * km_deg2rad(degrees);
+    double angle = (-1) * k_deg2rad(degrees);
     *px = (rx - cx)*cos(angle) - (ry - cy)*sin(angle) + cx;
     *py = (ry - cy)*cos(angle) + (rx - cx)*sin(angle) + cy;
 }
@@ -906,8 +906,8 @@ void ip_goto( ks_pen *kp, double xdest, double ydest)
 void ip_fd(ks_pen *kp, double px)
 {
     double nx, ny;
-    nx = kp->x + px*cos(km_deg2rad(kp->head));
-    ny = kp->y - px*sin(km_deg2rad(kp->head));
+    nx = kp->x + px*cos(k_deg2rad(kp->head));
+    ny = kp->y - px*sin(k_deg2rad(kp->head));
     ip_goto(kp, nx, ny );
 }
 

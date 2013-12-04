@@ -176,9 +176,9 @@ extern "C" {
 /* ######## FUNCOES MATEMATICAS              ## */
 /* ############################################ */
 
-    #define km_PI 3.14159265358979323846
-    #define km_deg2rad(angle)   ((angle)   * (km_PI/ 180.0  ))
-    #define km_rad2deg(radians) ((radians) * (180.0  / km_PI))
+    #define k_PI 3.14159265358979323846
+    #define k_deg2rad(angle)   ((angle)   * (k_PI/ 180.0  ))
+    #define k_rad2deg(radians) ((radians) * (180.0  / k_PI))
 
     /* # TODOS OS ANGULOS SAO DADOS E RETORNADOS EM GRAUS # */
 

@@ -11,7 +11,7 @@ void rtri(int nivel, double x, double y, double r)
     k_polig(x,y,'s',r,3,0);
     k_sleep(1);
     double a = r/4;
-    double b = (r/4)*tan(km_PI/6);
+    double b = (r/4)*tan(k_PI/6);
 
     rtri(nivel + 1, x-a,y+b,r/2);
     rtri(nivel + 1, x+a,y+b,r/2);
@@ -40,11 +40,11 @@ void frac_polig(int x, int y, int r){
     k_polig(x,y,'r',r, 40,0);
 
     frac_polig(x+r, y, r/2.8);
-    frac_polig(x+r*cos(km_PI/3)  , y-r*sin(km_PI/3),   r/2.8);
-    frac_polig(x+r*cos(2*km_PI/3), y-r*sin(2*km_PI/3), r/2.8);
-    frac_polig(x+r*cos(3*km_PI/3), y-r*sin(3*km_PI/3), r/2.8);
-    frac_polig(x+r*cos(4*km_PI/3), y-r*sin(4*km_PI/3), r/2.8);
-    frac_polig(x+r*cos(5*km_PI/3), y-r*sin(5*km_PI/3), r/2.8);
+    frac_polig(x+r*cos(k_PI/3)  , y-r*sin(k_PI/3),   r/2.8);
+    frac_polig(x+r*cos(2*k_PI/3), y-r*sin(2*k_PI/3), r/2.8);
+    frac_polig(x+r*cos(3*k_PI/3), y-r*sin(3*k_PI/3), r/2.8);
+    frac_polig(x+r*cos(4*k_PI/3), y-r*sin(4*k_PI/3), r/2.8);
+    frac_polig(x+r*cos(5*k_PI/3), y-r*sin(5*k_PI/3), r/2.8);
 }
 
 

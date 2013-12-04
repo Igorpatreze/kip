@@ -188,7 +188,7 @@ void msg_texto(){
     kenv_end();
 }
 
-int main(){
+int main_mola(){
     init();
     msg_texto();
     while(1){
